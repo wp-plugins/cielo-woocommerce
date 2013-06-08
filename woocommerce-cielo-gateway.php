@@ -3,7 +3,7 @@
 Plugin Name: Cielo WooCommerce  
 Plugin URI: http://omniwp.com.br/
 Description: Adiciona a opção de pagamento pela Cielo ao WooCommerce - Compatível com o XML versão 1.2.0, lançado em janeiro de 2012 -
-Version: 2.0
+Version: 2.0.1
 Author: omniWP, Gabriel Reguly
 Author URI: http://omniwp.com.br
 
@@ -12,10 +12,10 @@ Author URI: http://omniwp.com.br
 	License URI: http://www.gnu.org/licenses/gpl-3.0.html
 */
 
-add_action('plugins_loaded', 'woocommerce_cielo_init', 0);
+add_action('plugins_loaded', 'cielo_woocommerce_init', 0);
 
 
-function woocommerce_cielo_init() {
+function cielo_woocommerce_init() {
 
 	if ( !class_exists( 'WC_Payment_Gateway' ) ) return;
 	/**
@@ -94,16 +94,17 @@ function woocommerce_cielo_init() {
 			add_filter( 'plugin_action_links', array( $this, 'cielo_plugin_action_links' ), 10, 2 );
 
            // actions
-			add_action( 'init', array(&$this, 'check_return_cielo') );
-			add_action( 'return_cielo', array(&$this, 'process_return_cielo') );
-			add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( &$this, 'process_admin_options' ) );
+			add_action( 'woocommerce_api_wc_cielo', array( $this, 'check_return_cielo' ) );
 			
-			add_action( 'woocommerce_receipt_cielo', array( &$this, 'receipt_page' ) );
-			add_action( 'woocommerce_thankyou_cielo', array( &$this, 'thank_you_page' ) );
+			add_action( 'return_cielo', array(&$this, 'process_return_cielo') );
+			add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
+			
+			add_action( 'woocommerce_receipt_cielo', array( $this, 'receipt_page' ) );
+			add_action( 'woocommerce_thankyou_cielo', array( $this, 'thank_you_page' ) );
 
 			// fix broken template 
 			remove_action( 'woocommerce_checkout_order_review', 'woocommerce_order_review', 10 );
-			add_action(    'woocommerce_checkout_order_review', array( &$this, 'woocommerce_order_review' ) , 10 );
+			add_action(    'woocommerce_checkout_order_review', array( $this, 'woocommerce_order_review' ) , 10 );
 
 			// css and js
 		    wp_register_style( 'jquery-ui-css', plugins_url( '/js/theme/jquery.ui.all.css', __FILE__) );

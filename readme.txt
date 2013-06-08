@@ -39,6 +39,8 @@ Please notice that WooCommerce must be installed and active.
 
 == Changelog ==
 
+= 2.0.1 =
+* Fixed a bug, thanks for Claudio Sanches who reported it.
 = 2.0 =
 * Updated to WooCommerce 2.0
 = 1.0 =
@@ -46,6 +48,8 @@ Please notice that WooCommerce must be installed and active.
 
 == Upgrade Notice ==
 
+= 2.0.1 =
+* Fixed an incorrect hook, all users must upgrade.
 = 2.0 =
 * Updated to WooCommerce 2.0, all 2.x users must upgrade.
 = 1.0 = 
