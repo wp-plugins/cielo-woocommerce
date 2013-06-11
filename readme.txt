@@ -39,6 +39,9 @@ Please notice that WooCommerce must be installed and active.
 
 == Changelog ==
 
+= 2.0.2 =
+* Fixed a bug with as_is()/PHP < 5.3 where it hang at payment page.
+* Added a direct settings link on plugins page list.
 = 2.0.1 =
 * Fixed a bug, thanks for Claudio Sanches who reported it.
 = 2.0 =
@@ -48,6 +51,8 @@ Please notice that WooCommerce must be installed and active.
 
 == Upgrade Notice ==
 
+= 2.0.2 =
+* Fixed a bug, all users must upgrade.
 = 2.0.1 =
 * Fixed an incorrect hook, all users must upgrade.
 = 2.0 =

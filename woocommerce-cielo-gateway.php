@@ -3,7 +3,7 @@
 Plugin Name: Cielo WooCommerce  
 Plugin URI: http://omniwp.com.br/
 Description: Adiciona a opção de pagamento pela Cielo ao WooCommerce - Compatível com o XML versão 1.2.0, lançado em janeiro de 2012 -
-Version: 2.0.1
+Version: 2.0.2
 Author: omniWP, Gabriel Reguly
 Author URI: http://omniwp.com.br
 
@@ -18,10 +18,11 @@ add_action('plugins_loaded', 'cielo_woocommerce_init', 0);
 function cielo_woocommerce_init() {
 
 	if ( !class_exists( 'WC_Payment_Gateway' ) ) return;
+	
 	/**
  	 * Gateway class
  	 */
-	class WC_cielo extends WC_Payment_Gateway {
+	class wc_cielo extends WC_Payment_Gateway {
 	
 		public function __construct() { 
 			global $woocommerce;
@@ -79,7 +80,7 @@ function cielo_woocommerce_init() {
 			$this->numero          = $this->settings['numero'];
 			$this->chave           = $this->settings['chave'];
 			$this->mode 		   = $this->settings['mode'];
-			$this->buypage 		   = $this->settings['buypage'];
+//			$this->buypage 		   = $this->settings['buypage'];
 			$this->meios    	   = $this->settings['meios'];  
 			$this->parcela_minima  = $this->settings['parcela_minima'];
 			$this->taxa_juros      = $this->settings['taxa_juros'];
@@ -90,13 +91,11 @@ function cielo_woocommerce_init() {
 			$this->captura         = $this->settings['captura'];			
 			$this->autorizar       = $this->settings['autorizar'];
 			
-			// filters
-			add_filter( 'plugin_action_links', array( $this, 'cielo_plugin_action_links' ), 10, 2 );
 
            // actions
 			add_action( 'woocommerce_api_wc_cielo', array( $this, 'check_return_cielo' ) );
 			
-			add_action( 'return_cielo', array(&$this, 'process_return_cielo') );
+			add_action( 'return_cielo', array( $this, 'process_return_cielo') );
 			add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 			
 			add_action( 'woocommerce_receipt_cielo', array( $this, 'receipt_page' ) );
@@ -116,16 +115,6 @@ function cielo_woocommerce_init() {
 			$this->enabled = ( 'yes' == $this->settings['enabled'] )  && $this->testa_dados_cielo();
 		} 
 
-		/**
-	     * Add a direct link to settings 
-	     */
-		function cielo_plugin_action_links( $links, $file ) {
-			if ( $file == 'woocommerce-cielo-gateway/woocommerce-cielo-gateway.php' ) {
-				$settings_link = '<a href="' . admin_url( '?page=woocommerce&tab=payment_gateways#gateway-cielo') . '">Configuração</a>';
-				array_unshift( $links, $settings_link ); // before other links
-			}
-			return $links;
-		}
 		/**
 	     * Initialise Gateway Settings Form Fields
 	     */
@@ -546,7 +535,6 @@ jQuery( document ).ready( function() {
 				 Valor do pedido R$ ' . number_format( $Pedido->dadosPedidoValor/100 , 2, ',' , '.' ) . '</p>';
 			
 			echo '<p>Contactando o site da Cielo...';
-			
 			// INICIA TRANSAÇÃO NO SITE DA CIELO
 			if ( 'test' != $this->mode ) {
 				$Pedido->dadosEcNumero = $this->numero;
@@ -703,12 +691,25 @@ jQuery( document ).ready( function() {
 	/**
  	* Add the Gateway to WooCommerce
  	**/
-	function woocommerce_add_cielo_gateway( $methods ) {
-		$methods[] = 'WC_cielo';
+	function cielo_woocommerce_add_cielo_gateway( $methods ) {
+		$methods[] = 'wc_cielo';
 		return $methods;
 	}
 	
-	add_filter( 'woocommerce_payment_gateways', 'woocommerce_add_cielo_gateway' );
+	/**
+	 * Add a direct link to settings 
+	 */
+	function cielo_woocommerce_plugin_action_links( $links, $file ) {
+		if ( $file == 'cielo-woocommerce/woocommerce-cielo-gateway.php' ) {
+			$settings_link = '<a href="' . admin_url( '?page=woocommerce&tab=payment_gateways&section=wc_cielo') . '">Configuração</a>';
+//			$settings_link .= '<a href="http://omniwp.com.br/">Suporte Comercial</a>';
+			array_unshift( $links, $settings_link ); // before other links
+		}
+		return $links;
+	}
+
+	add_filter( 'woocommerce_payment_gateways', 'cielo_woocommerce_add_cielo_gateway' );
+	add_filter( 'plugin_action_links',          'cielo_woocommerce_plugin_action_links', 10, 2 );
 
 } 
 ?>

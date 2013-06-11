@@ -70,7 +70,7 @@
 	// Grava erros no arquivo de log
 	function Handler($eNum, $eMsg, $file, $line, $eVars) {
 
-		if ( E_NOTICE == $eNum	) {
+		if ( in_array( $eNum, array( E_NOTICE, E_STRICT ) ) ) {
 			return;
 		}
 		$logFile = LOGS_DIR . 'log.txt';
