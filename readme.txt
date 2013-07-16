@@ -19,11 +19,8 @@ The Cielo WooCommerce plugin enables integration with WooCommerce and the Cielo 
 
 Please notice that WooCommerce must be installed and active.
 
-======================================================
+O suporte em PortuguÃªs Ã© feito em http://br.forums.wordpress.org/forum/plugins-e-codigos
 
-O suporte em Português, feito pela comunidade, é em http://br.forums.wordpress.org/forum/plugins-e-codigos
-
-======================================================
 
 == Installation ==
 
@@ -44,7 +41,7 @@ O suporte em Português, feito pela comunidade, é em http://br.forums.wordpress.o
 == Changelog ==
 
 = 2.0.3 =
-* Corrigida falha com a página de retorno da Cielo.
+* Corrigida falha com a pÃ¡gina de retorno da Cielo.
 = 2.0.2 =
 * Fixed a bug with as_is()/PHP < 5.3 where it hang at payment page.
 * Added a direct settings link on plugins page list.
@@ -58,7 +55,7 @@ O suporte em Português, feito pela comunidade, é em http://br.forums.wordpress.o
 == Upgrade Notice ==
 
 = 2.0.2 =
-* Corrigida falha, todos usuários devem atualizar.
+* Corrigida falha, todos usuÃ¡rios devem atualizar.
 = 2.0.2 =
 * Fixed a bug, all users must upgrade.
 = 2.0.1 =
