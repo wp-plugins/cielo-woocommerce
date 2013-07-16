@@ -3,7 +3,7 @@ Contributors: Gabriel Reguly
 Donate link: http://omniwp.com.br/donate/
 Tags: WooCommerce, Payment Gateway, Cielo
 Requires at least:3.5 & WooCommerce 2.0
-Tested up to: 3.5.1 & WooCommerce 2.10
+Tested up to: 3.5.1 & WooCommerce 2.0.12
 Stable tag: trunk
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -19,7 +19,11 @@ The Cielo WooCommerce plugin enables integration with WooCommerce and the Cielo 
 
 Please notice that WooCommerce must be installed and active.
 
+======================================================
 
+O suporte em Português, feito pela comunidade, é em http://br.forums.wordpress.org/forum/plugins-e-codigos
+
+======================================================
 
 == Installation ==
 
@@ -39,6 +43,8 @@ Please notice that WooCommerce must be installed and active.
 
 == Changelog ==
 
+= 2.0.3 =
+* Corrigida falha com a página de retorno da Cielo.
 = 2.0.2 =
 * Fixed a bug with as_is()/PHP < 5.3 where it hang at payment page.
 * Added a direct settings link on plugins page list.
@@ -51,6 +57,8 @@ Please notice that WooCommerce must be installed and active.
 
 == Upgrade Notice ==
 
+= 2.0.2 =
+* Corrigida falha, todos usuários devem atualizar.
 = 2.0.2 =
 * Fixed a bug, all users must upgrade.
 = 2.0.1 =

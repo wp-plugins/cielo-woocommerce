@@ -3,11 +3,11 @@
 Plugin Name: Cielo WooCommerce  
 Plugin URI: http://omniwp.com.br/
 Description: Adiciona a opção de pagamento pela Cielo ao WooCommerce - Compatível com o XML versão 1.2.0, lançado em janeiro de 2012 -
-Version: 2.0.2
+Version: 2.0.3
 Author: omniWP, Gabriel Reguly
 Author URI: http://omniwp.com.br
 
-	Copyright: © 2012 omniWP
+	Copyright: © 2012,2013 omniWP
 	License: GNU General Public License v3.0
 	License URI: http://www.gnu.org/licenses/gpl-3.0.html
 */
@@ -528,8 +528,8 @@ jQuery( document ).ready( function() {
 			
 			$Pedido->dadosPedidoNumero =  $order->id;
 			$Pedido->dadosPedidoValor  = str_replace( array( ',', '.'), '', $order->order_total );
-			$Pedido->urlRetorno = urlencode( htmlentities( add_query_arg( 'retorno_cielo', 1, add_query_arg( 'order', $order->id, 	add_query_arg( 'key', $order->order_key, get_permalink(  woocommerce_get_page_id( 'thanks' ) ) ) ) ), ENT_QUOTES  )); 
-
+			$Pedido->urlRetorno = urlencode( htmlentities( add_query_arg('wc-api', 'wc_cielo', add_query_arg( 'retorno_cielo', 1, add_query_arg( 'order', $order->id, 	add_query_arg( 'key', $order->order_key, get_permalink(  woocommerce_get_page_id( 'thanks' ) ) ) ) ) ), ENT_QUOTES  )); 
+		
 			echo '<p>Forma de pagamento selecionada:<br />
 				 ' . $descricao . '<br />
 				 Valor do pedido R$ ' . number_format( $Pedido->dadosPedidoValor/100 , 2, ',' , '.' ) . '</p>';
@@ -612,6 +612,7 @@ jQuery( document ).ready( function() {
 					}
 				}
 				header( 'location:' . add_query_arg( 'order', $order->id, add_query_arg( 'key', $order->order_key, get_permalink(  woocommerce_get_page_id( 'thanks' ) )  ) ) ); 
+				exit;				
 			}
 		}
 		
