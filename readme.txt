@@ -3,7 +3,7 @@ Contributors: Gabriel Reguly
 Donate link: http://omniwp.com.br/donate/
 Tags: WooCommerce, Payment Gateway, Cielo
 Requires at least:3.5 & WooCommerce 2.0
-Tested up to: 3.5.1 & WooCommerce 2.0.12
+Tested up to: 3.6.1 & WooCommerce 2.0.14
 Stable tag: trunk
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -40,6 +40,11 @@ O suporte em Português é feito em http://br.forums.wordpress.org/forum/plugins
 
 == Changelog ==
 
+= 2.0.5 =
+* Adicionadas mensagens de erro para quando as bandeiras de cartão não foram selecionadas.
+* Removido o template customizado review-order.php
+= 2.0.4 =
+* Adicionada opção de reduzir o estoque quando o pagamento é completado com sucesso.
 = 2.0.3 =
 * Corrigida falha com a página de retorno da Cielo.
 = 2.0.2 =
@@ -54,7 +59,9 @@ O suporte em Português é feito em http://br.forums.wordpress.org/forum/plugins
 
 == Upgrade Notice ==
 
-= 2.0.2 =
+= 2.0.4 =
+* Melhoria no controle de estoque.
+= 2.0.3 =
 * Corrigida falha, todos usuários devem atualizar.
 = 2.0.2 =
 * Fixed a bug, all users must upgrade.

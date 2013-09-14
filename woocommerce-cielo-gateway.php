@@ -1,14 +1,14 @@
 <?php
 /*
 Plugin Name: Cielo WooCommerce  
-Plugin URI: http://omniwp.com.br/
+Plugin URI: http://omniwp.com.br/plugins/
 Description: Adiciona a opção de pagamento pela Cielo ao WooCommerce - Compatível com o XML versão 1.2.0, lançado em janeiro de 2012 -
-Version: 2.0.3
-Author: omniWP, Gabriel Reguly
+Version: 2.0.5
+Author: Gabriel Reguly, omniWP, 
 Author URI: http://omniwp.com.br
 
 	Copyright: © 2012,2013 omniWP
-	License: GNU General Public License v3.0
+	License: GNU General Public License v2.0
 	License URI: http://www.gnu.org/licenses/gpl-3.0.html
 */
 
@@ -101,9 +101,6 @@ function cielo_woocommerce_init() {
 			add_action( 'woocommerce_receipt_cielo', array( $this, 'receipt_page' ) );
 			add_action( 'woocommerce_thankyou_cielo', array( $this, 'thank_you_page' ) );
 
-			// fix broken template 
-			remove_action( 'woocommerce_checkout_order_review', 'woocommerce_order_review', 10 );
-			add_action(    'woocommerce_checkout_order_review', array( $this, 'woocommerce_order_review' ) , 10 );
 
 			// css and js
 		    wp_register_style( 'jquery-ui-css', plugins_url( '/js/theme/jquery.ui.all.css', __FILE__) );
@@ -112,7 +109,7 @@ function cielo_woocommerce_init() {
 			wp_enqueue_script( 'jquery-ui-tabs' );
 			wp_enqueue_script( 'jquery-cookie' );
 
-			$this->enabled = ( 'yes' == $this->settings['enabled'] )  && $this->testa_dados_cielo();
+			$this->enabled = ( 'yes' == $this->settings['enabled'] )  && $this->testa_dados_cielo() && ! empty( $this->meios );
 		} 
 
 		/**
@@ -125,7 +122,7 @@ function cielo_woocommerce_init() {
 								'title' => 'Habilitar/Desabilitar', 
 								'type' => 'checkbox', 
 								'label' => 'Ativar Cielo', 
-								'default' => 'yes'
+								'default' => 'no'
 							), 
 				'title' => array(
 								'title' => 'Título', 
@@ -177,7 +174,7 @@ function cielo_woocommerce_init() {
                                 'type' => 'multiselect',
 								'description' => 'Selecione as bandeiras que serão aceitas como forma de pagamento.<br />Pressione a tecla Ctrl para selecionar mais de uma bandeira.', 
                                 'options' => $this->descricao_meios,
-								'default' => 'visa'
+								'default' => 'visa',
 							),
  				'captura'  => array(
 								'title' => 'Capturar automaticamente?', 
@@ -284,6 +281,14 @@ function cielo_woocommerce_init() {
 </div>
 <?php
 			}
+			if ( empty( $this->meios ) ) {
+?>
+<div class="inline error">
+	<p><strong>Gateway Desativado</strong>: Você deve especificar as bandeiras aceitas.</p>
+</div>
+<?php
+			
+			}
 			if ( get_option('woocommerce_currency') != 'BRL' ) {
 ?>
 <div class="inline error">
@@ -302,15 +307,15 @@ function cielo_woocommerce_init() {
 			}
 	    } // End admin_options()
 		
-		public function woocommerce_order_review() { // replaces default template with our template
-			$template = plugin_dir_path( __FILE__ ) . 'templates/checkout/custom-review-order.php';
-			load_template( $template );
-		}
-
 		/**
 		 * Payment form on checkout page or on pay page
 		 */
  		function payment_fields() {
+			if ( empty( $this->meios ) ) {
+				echo 'O plugin Cielo WooCommerce não está configurado.';				
+				return;
+			}
+
 			global $woocommerce;
 			$show_fields = false;
 			if ( $this->description )  {
@@ -602,6 +607,8 @@ jQuery( document ).ready( function() {
 						} else {
 							// Order paid
 							$order->add_order_note( $Pedido->getStatus() . ' TID:' . $Pedido->tid );
+							// Reduce stock levels
+							$order->reduce_order_stock();
 							$order->payment_complete();
 						}
 						if ( is_multisite() ) {
@@ -640,6 +647,8 @@ jQuery( document ).ready( function() {
 			if ( $order->status == 'processing' || $order->status == 'completed' ) {                                                     
                 //display additional success message
 				echo '<p>Seu pagamento para ' . woocommerce_price( $order->order_total ) . ' foi recebido com sucesso. O código de autorização foi gerado, <a href="' .  add_query_arg('order', $order_id, get_permalink( woocommerce_get_page_id( 'woocommerce_view_order' ) ) ) . '">Clique aqui para ver seu pedido</a></p>';
+				do_action( 'woocommerce_thankyou_' . $order->payment_method, $order->id );
+				do_action( 'woocommerce_thankyou', $order->id );
 			} else {
 				//display additional failed message
 				echo '<p>Para maiores informações ou dúvidas quanto ao seu pedido, <a href="'. add_query_arg('order', $order_id, get_permalink( woocommerce_get_page_id( 'woocommerce_view_order' ) ) ) . '">Clique aqui para ver seu pedido</a> .</p>';
@@ -697,6 +706,8 @@ jQuery( document ).ready( function() {
 		return $methods;
 	}
 	
+	
+	
 	/**
 	 * Add a direct link to settings 
 	 */
@@ -708,9 +719,20 @@ jQuery( document ).ready( function() {
 		}
 		return $links;
 	}
+	
+	/**
+	 * Add a notice if configuration is due
+	 */
+	function cielo_woocommerce_plugin_notice( $plugin ) {
+		if ( $plugin == 'cielo-woocommerce/woocommerce-cielo-gateway.php' ) {
+			echo '<td colspan="5" class="plugin-update"><a href="' . admin_url( '?page=woocommerce&tab=payment_gateways&section=wc_cielo') . '">Você precisa configurar o Cielo WooCommerce.</a></td>';
+		}
+	}
+
 
 	add_filter( 'woocommerce_payment_gateways', 'cielo_woocommerce_add_cielo_gateway' );
 	add_filter( 'plugin_action_links',          'cielo_woocommerce_plugin_action_links', 10, 2 );
+	add_action( 'after_plugin_row', 'cielo_woocommerce_plugin_notice' );
 
 } 
 ?>
