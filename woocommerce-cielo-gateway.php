@@ -3,7 +3,7 @@
 Plugin Name: Cielo WooCommerce  
 Plugin URI: http://omniwp.com.br/plugins/
 Description: Adiciona a opção de pagamento pela Cielo ao WooCommerce - Compatível com o XML versão 1.2.0, lançado em janeiro de 2012 -
-Version: 2.0.5
+Version: 2.0.6
 Author: Gabriel Reguly, omniWP, 
 Author URI: http://omniwp.com.br
 
@@ -99,7 +99,6 @@ function cielo_woocommerce_init() {
 			add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 			
 			add_action( 'woocommerce_receipt_cielo', array( $this, 'receipt_page' ) );
-			add_action( 'woocommerce_thankyou_cielo', array( $this, 'thank_you_page' ) );
 
 
 			// css and js
@@ -647,7 +646,6 @@ jQuery( document ).ready( function() {
 			if ( $order->status == 'processing' || $order->status == 'completed' ) {                                                     
                 //display additional success message
 				echo '<p>Seu pagamento para ' . woocommerce_price( $order->order_total ) . ' foi recebido com sucesso. O código de autorização foi gerado, <a href="' .  add_query_arg('order', $order_id, get_permalink( woocommerce_get_page_id( 'woocommerce_view_order' ) ) ) . '">Clique aqui para ver seu pedido</a></p>';
-				do_action( 'woocommerce_thankyou_' . $order->payment_method, $order->id );
 				do_action( 'woocommerce_thankyou', $order->id );
 			} else {
 				//display additional failed message
@@ -725,7 +723,11 @@ jQuery( document ).ready( function() {
 	 */
 	function cielo_woocommerce_plugin_notice( $plugin ) {
 		if ( $plugin == 'cielo-woocommerce/woocommerce-cielo-gateway.php' ) {
+			$cielo_settings = get_option( 'woocommerce_cielo_settings', true );
+			if ( 'yes' == $cielo_settings['enabled']  
+				&& ( empty( $cielo_settings['numero'] ) || empty( $cielo_settings['chave'] ) || empty( $cielo_settings['meios'] ) ) ) {
 			echo '<td colspan="5" class="plugin-update"><a href="' . admin_url( '?page=woocommerce&tab=payment_gateways&section=wc_cielo') . '">Você precisa configurar o Cielo WooCommerce.</a></td>';
+			}				
 		}
 	}
 

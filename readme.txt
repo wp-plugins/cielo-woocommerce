@@ -40,6 +40,9 @@ O suporte em Português é feito em http://br.forums.wordpress.org/forum/plugins
 
 == Changelog ==
 
+= 2.0.6 =
+* Correção da mensagem de erro para quando as bandeiras de cartão não foram selecionadas.
+* Removida chamada em laço eterno da página woocommerce_thank_you
 = 2.0.5 =
 * Adicionadas mensagens de erro para quando as bandeiras de cartão não foram selecionadas.
 * Removido o template customizado review-order.php
@@ -59,6 +62,10 @@ O suporte em Português é feito em http://br.forums.wordpress.org/forum/plugins
 
 == Upgrade Notice ==
 
+= 2.0.6 =
+* Corrigida falha, todos usuários devem atualizar.
+= 2.0.5 =
+* Melhoria nas mensagems de erro.
 = 2.0.4 =
 * Melhoria no controle de estoque.
 = 2.0.3 =
