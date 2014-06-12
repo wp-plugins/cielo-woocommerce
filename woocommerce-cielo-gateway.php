@@ -1,63 +1,64 @@
 <?php
-/*
-Plugin Name: Cielo WooCommerce  
-Plugin URI: http://omniwp.com.br/plugins/
-Description: Adiciona a opção de pagamento pela Cielo ao WooCommerce - Compatível com o XML versão 1.2.0, lançado em janeiro de 2012 -
-Version: 2.0.6
-Author: Gabriel Reguly, omniWP, 
-Author URI: http://omniwp.com.br
-
-	Copyright: © 2012,2013 omniWP
-	License: GNU General Public License v2.0
-	License URI: http://www.gnu.org/licenses/gpl-3.0.html
-*/
+/**
+ * Plugin Name: Cielo WooCommerce
+ * Plugin URI: http://omniwp.com.br/plugins/
+ * Description: Adiciona a opção de pagamento pela Cielo ao WooCommerce - Compatível com o XML versão 1.2.0, lançado em janeiro de 2012
+ * Author: Gabriel Reguly, omniWP, claudiosanches
+ * Author URI: http://omniwp.com.br
+ * Version: 2.0.7
+ * License: GPLv2 or later
+ * Text Domain: woocommerce-pagarme
+ * Domain Path: /languages/
+ * Copyright: © 2012,2013 omniWP
+ * License: GNU General Public License v2.0
+ * License URI: http://www.gnu.org/licenses/gpl-3.0.html
+ */
 
 add_action('plugins_loaded', 'cielo_woocommerce_init', 0);
-
 
 function cielo_woocommerce_init() {
 
 	if ( !class_exists( 'WC_Payment_Gateway' ) ) return;
-	
+
 	/**
  	 * Gateway class
  	 */
 	class wc_cielo extends WC_Payment_Gateway {
-	
-		public function __construct() { 
+
+		public function __construct() {
 			global $woocommerce;
 
 	        $this->id			= 'cielo';
 	        $this->method_title = 'Cielo';
-			$this->icon 		= plugins_url( 'i/cielo.jpg' , __FILE__ );
+			$this->icon 		= plugins_url( 'assets/images/cielo.jpg' , __FILE__ );
             $this->has_fields   = true;
 
-												
-			//  meios de pagamento (bandeiras) e produtos 
-			$this->descricao_meios = array( 
+
+			//  meios de pagamento (bandeiras) e produtos
+			$this->descricao_meios = array(
 									'visa' => 'Visa',
 									'mastercard' => 'MasterCard',
 									'diners' => 'Diners',
 									'discover' => 'Discover',
 									'elo' => 'Elo',
 									'amex' => 'American Express' );
-				// credito a vista									
-			$this->meios_credito = array( 
+				// credito a vista
+			$this->meios_credito = array(
 									'visa',
 									'mastercard',
 									'diners',
 									'discover',
 									'elo',
 									'amex');
-				// credito parcelado loja									
-			$this->meios_credito_loja = array( 
+				// credito parcelado loja
+			$this->meios_credito_loja = array(
 									'visa',
 									'mastercard',
 									'diners',
 									'elo',
 									'amex');
-				// credito parcelado cartao									
-			$this->meios_credito_cartao = array( 
+				// credito parcelado cartao
+			$this->meios_credito_cartao = array(
 									'visa',
 									'mastercard',
 									'diners',
@@ -73,7 +74,7 @@ function cielo_woocommerce_init() {
 
 			// Load the settings.
 			$this->init_settings();
-			
+
 			// Define user set variables
 			$this->title 		   = $this->settings['title'];
 			$this->description 	   = $this->settings['description'];
@@ -81,24 +82,25 @@ function cielo_woocommerce_init() {
 			$this->chave           = $this->settings['chave'];
 			$this->mode 		   = $this->settings['mode'];
 //			$this->buypage 		   = $this->settings['buypage'];
-			$this->meios    	   = $this->settings['meios'];  
+			$this->meios    	   = $this->settings['meios'];
 			$this->parcela_minima  = $this->settings['parcela_minima'];
 			$this->taxa_juros      = $this->settings['taxa_juros'];
 			$this->desconto_debito = $this->settings['desconto_debito'];
 			$this->parcelas        = $this->settings['parcelas'];
 			$this->juros 		   = $this->settings['juros'];
 			$this->parcelamento    = $this->settings['parcelamento'];
-			$this->captura         = $this->settings['captura'];			
+			$this->captura         = $this->settings['captura'];
 			$this->autorizar       = $this->settings['autorizar'];
-			
+
 
            // actions
 			add_action( 'woocommerce_api_wc_cielo', array( $this, 'check_return_cielo' ) );
-			
+
 			add_action( 'return_cielo', array( $this, 'process_return_cielo') );
 			add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
-			
+
 			add_action( 'woocommerce_receipt_cielo', array( $this, 'receipt_page' ) );
+			add_action( 'woocommerce_thankyou_cielo', array( $this, 'thank_you_page' ) );
 
 
 			// css and js
@@ -107,9 +109,21 @@ function cielo_woocommerce_init() {
 			wp_register_script( 'jquery-cookie', plugins_url( '/js/jquery.cookie.js',  __FILE__ ), array( 'jquery' ) );
 			wp_enqueue_script( 'jquery-ui-tabs' );
 			wp_enqueue_script( 'jquery-cookie' );
+		}
 
-			$this->enabled = ( 'yes' == $this->settings['enabled'] )  && $this->testa_dados_cielo() && ! empty( $this->meios );
-		} 
+		/**
+		 * Returns a value indicating the the Gateway is available or not. It's called
+		 * automatically by WooCommerce before allowing customers to use the gateway
+		 * for payment.
+		 *
+		 * @return bool
+		 */
+		public function is_available() {
+			// Test if is valid for use.
+			$available = parent::is_available() && 'yes' == $this->get_option( 'enabled' ) && $this->testa_dados_cielo() && ! empty( $this->meios );
+
+			return $available;
+		}
 
 		/**
 	     * Initialise Gateway Settings Form Fields
@@ -118,28 +132,28 @@ function cielo_woocommerce_init() {
 
 	    	$this->form_fields = array(
 				'enabled' => array(
-								'title' => 'Habilitar/Desabilitar', 
-								'type' => 'checkbox', 
-								'label' => 'Ativar Cielo', 
+								'title' => 'Habilitar/Desabilitar',
+								'type' => 'checkbox',
+								'label' => 'Ativar Cielo',
 								'default' => 'no'
-							), 
+							),
 				'title' => array(
-								'title' => 'Título', 
-								'type' => 'text', 
-								'description' => 'Essa opção controla o título mostrado ao cliente quando ele está no checkout.', 
+								'title' => 'Título',
+								'type' => 'text',
+								'description' => 'Essa opção controla o título mostrado ao cliente quando ele está no checkout.',
 								'default' => 'Cielo'
 							),
 				'description' => array(
-								'title' => 'Descrição', 
-								'type' => 'textarea', 
-								'description' => 'Essa opção controla a descrição mostrada ao cliente quando ele está no checkout.', 
+								'title' => 'Descrição',
+								'type' => 'textarea',
+								'description' => 'Essa opção controla a descrição mostrada ao cliente quando ele está no checkout.',
 								'default' => 'Pague usando o método seguro da Cielo'
 							),
                 'mode'      => array(
                                 'title' => 'Tipo',
                                 'type' => 'select',
-                                'options' => array( 
-												'test' => 'Teste', 
+                                'options' => array(
+												'test' => 'Teste',
 												'production' => 'Produção'
 								),
                                 'description' => 'Selecione modo de operação teste ou produção.',
@@ -149,46 +163,46 @@ function cielo_woocommerce_init() {
                 'buypage'      => array(
                                 'title' => 'Integração',
                                 'type' => 'select',
-                                'options' => array( 
+                                'options' => array(
 												'cielo' => 'BuyPage Cielo'
 								),
                                 'description' => 'Selecione a modalidade de integração.',
 								'default' => 'cielo'
-                            ),							
+                            ),
 */
 				'numero' => array(
-								'title' => 'Número de Afiliação', 
-								'description' => 'Número de afiliação da loja com a Cielo.', 
-								'type' => 'text', 
+								'title' => 'Número de Afiliação',
+								'description' => 'Número de afiliação da loja com a Cielo.',
+								'type' => 'text',
 								'default' => ''
 							),
 				'chave' => array(
-								'title' =>'Chave de Afiliação', 
-								'type' => 'text', 
-								'description' => 'Chave de acesso da loja atribuída pela Cielo.', 
+								'title' =>'Chave de Afiliação',
+								'type' => 'text',
+								'description' => 'Chave de acesso da loja atribuída pela Cielo.',
 								'default' => ''
 							),
  				'meios'  => array(
-								'title' => 'Bandeiras Aceitas', 
+								'title' => 'Bandeiras Aceitas',
                                 'type' => 'multiselect',
-								'description' => 'Selecione as bandeiras que serão aceitas como forma de pagamento.<br />Pressione a tecla Ctrl para selecionar mais de uma bandeira.', 
+								'description' => 'Selecione as bandeiras que serão aceitas como forma de pagamento.<br />Pressione a tecla Ctrl para selecionar mais de uma bandeira.',
                                 'options' => $this->descricao_meios,
 								'default' => 'visa',
 							),
  				'captura'  => array(
-								'title' => 'Capturar automaticamente?', 
+								'title' => 'Capturar automaticamente?',
                                 'type' => 'select',
-								'description' => 'Selecione a forma de captura.', 
-                                'options' => array( 
+								'description' => 'Selecione a forma de captura.',
+                                'options' => array(
 												'true' => 'Sim',
 												'false' => 'Não' ),
 								'default' => 'true'
 							),
  				'autorizar'  => array(
-								'title' => 'Autorização automática<br />( somente Visa )', 
+								'title' => 'Autorização automática<br />( somente Visa )',
                                 'type' => 'select',
-								'description' => 'Selecione a forma de autorização .', 
-                                'options' => array( 
+								'description' => 'Selecione a forma de autorização .',
+                                'options' => array(
 												'3' => 'Autorizar direto ( não funciona para débito )',
 												'2' => 'Autorizar transação autenticada e não-autenticada ',
 												'1' => 'Autorizar transação somente se autenticada',
@@ -196,76 +210,76 @@ function cielo_woocommerce_init() {
 								'default' => '2'
 							),
 				'parcela_minima' => array(
-								'title' => 'Parcela Mínima', 
-								'type' => 'text', 
-								'description' => 'Valor mínimo de cada parcela, não pode ser inferior a R$ 5,00', 
+								'title' => 'Parcela Mínima',
+								'type' => 'text',
+								'description' => 'Valor mínimo de cada parcela, não pode ser inferior a R$ 5,00',
 								'default' => '5.00'
 							),
 				'taxa_juros' => array(
-								'title' => 'Taxa de Juros (%)', 
-								'type' => 'text', 
-								'description' => 'Taxa percentual de juros que será cobrada do cliente nas parcelas em que haja juros a ser cobrado.', 
+								'title' => 'Taxa de Juros (%)',
+								'type' => 'text',
+								'description' => 'Taxa percentual de juros que será cobrada do cliente nas parcelas em que haja juros a ser cobrado.',
 								'default' => '2.00'
 							),
 				'desconto_debito' => array(
-								'title' => 'Desconto Débito (%)', 
-								'type' => 'text', 
-								'description' => 'Desconto percentual para pagamentos feitos por débito.', 
+								'title' => 'Desconto Débito (%)',
+								'type' => 'text',
+								'description' => 'Desconto percentual para pagamentos feitos por débito.',
 								'default' => '0'
 							),
  				'parcelas'  => array(
-								'title' => 'Parcelar em até', 
+								'title' => 'Parcelar em até',
                                 'type' => 'select',
-								'description' => 'Número máximo de parcelas para compras em sua loja.', 
-                                'options' => array( 
-												'1' => '1x', 
-												'2' => '2x', 
-												'3' => '3x', 
-												'4' => '4x', 
-												'5' => '5x', 
+								'description' => 'Número máximo de parcelas para compras em sua loja.',
+                                'options' => array(
+												'1' => '1x',
+												'2' => '2x',
+												'3' => '3x',
+												'4' => '4x',
+												'5' => '5x',
 												'6' => '6x',
-												'7' => '7x', 
-												'8' => '8x', 
-												'9' => '9x', 
-												'10' => '10x', 
-												'11' => '11x', 
+												'7' => '7x',
+												'8' => '8x',
+												'9' => '9x',
+												'10' => '10x',
+												'11' => '11x',
 												'12' => '12x' ),
 								'default' => '1'
 							),
  				'juros'  => array(
-								'title' => 'Sem juros até', 
+								'title' => 'Sem juros até',
                                 'type' => 'select',
-								'description' => 'Número de parcelas em que não será cobrado juros do cliente.', 
-                                'options' => array( 
-												'1' => '1x', 
-												'2' => '2x', 
-												'3' => '3x', 
-												'4' => '4x', 
-												'5' => '5x', 
+								'description' => 'Número de parcelas em que não será cobrado juros do cliente.',
+                                'options' => array(
+												'1' => '1x',
+												'2' => '2x',
+												'3' => '3x',
+												'4' => '4x',
+												'5' => '5x',
 												'6' => '6x',
-												'7' => '7x', 
-												'8' => '8x', 
-												'9' => '9x', 
-												'10' => '10x', 
-												'11' => '11x', 
+												'7' => '7x',
+												'8' => '8x',
+												'9' => '9x',
+												'10' => '10x',
+												'11' => '11x',
 												'12' => '12x' ),
 								'default' => '6'
 							),
  				'parcelamento'  => array(
-								'title' => 'Tipo Parcelamento', 
+								'title' => 'Tipo Parcelamento',
                                 'type' => 'select',
-								'description' => 'Parcelado loja adiciona juros no total da compra', 
-                                'options' => array( 
+								'description' => 'Parcelado loja adiciona juros no total da compra',
+                                'options' => array(
 												'2' => 'Parcelado loja',
 												'3' => 'Parcelado administradora' ),
 								'default' => '2'
 							)
 				);
-	    
+
 	    } // End init_form_fields()
-	    
+
 		/**
-		 * Admin Panel Options 
+		 * Admin Panel Options
 		 */
 		public function admin_options() {
    	?>
@@ -273,7 +287,7 @@ function cielo_woocommerce_init() {
 <h3>Cielo e-Commerce</h3>
 <p><em>Kit Cielo e-Commerce – Multiplataforma (disponíveis VISA, Mastercard, Elo, Diners, Discover e Amex.) <a href="http://www.cielo.com.br/portal/kit-e-commerce-cielo.html" target="_blank">http://www.cielo.com.br/portal/kit-e-commerce-cielo.html</a></em></p>
 <?php
-			if ( ! $this->testa_dados_cielo() ) { 
+			if ( ! $this->testa_dados_cielo() ) {
 ?>
 <div class="inline error">
 	<p><strong>Gateway Desativado</strong>: Você deve especificar a chave gerada juntamente à Cielo.</p>
@@ -286,7 +300,7 @@ function cielo_woocommerce_init() {
 	<p><strong>Gateway Desativado</strong>: Você deve especificar as bandeiras aceitas.</p>
 </div>
 <?php
-			
+
 			}
 			if ( get_option('woocommerce_currency') != 'BRL' ) {
 ?>
@@ -305,13 +319,13 @@ function cielo_woocommerce_init() {
 <?php
 			}
 	    } // End admin_options()
-		
+
 		/**
 		 * Payment form on checkout page or on pay page
 		 */
  		function payment_fields() {
 			if ( empty( $this->meios ) ) {
-				echo 'O plugin Cielo WooCommerce não está configurado.';				
+				echo 'O plugin Cielo WooCommerce não está configurado.';
 				return;
 			}
 
@@ -330,8 +344,8 @@ function cielo_woocommerce_init() {
 					$order_key = urldecode( $_GET['order'] );
 					$order_id = (int) $_GET['order_id'];
 					$order = new WC_Order( $order_id );
-					if ( $order->id == $order_id 
-							&& $order->order_key == $order_key 
+					if ( $order->id == $order_id
+							&& $order->order_key == $order_key
 							&& in_array( $order->status, array( 'pending', 'failed' ) ) ) {
 						$valor = $order->order_total;
 						$show_fields = 'order';
@@ -341,13 +355,13 @@ jQuery( document ).ready( function() {
 	jQuery( 'body' ).trigger( 'updated_checkout' );
 });
 </script>
-<?php						
+<?php
 					}
 				}
 			}
 			if ( false != $show_fields ) {
 				$valorDebito = $valor * ( 1 - ( $this->desconto_debito / 100 ) );
-				// calcular nro de parcelas, respeitando a parcela mínima configurada 
+				// calcular nro de parcelas, respeitando a parcela mínima configurada
 				$i = $this->parcelas;
 				if ( $this->parcela_minima < $this->valor_minimo_cielo_parcela )  {
 					$valorMinimo = $this->valor_minimo_cielo_parcela;
@@ -373,38 +387,38 @@ jQuery( document ).ready( function() {
 ?>
 		</ul>
 		<?php
-				$k = 0;					
+				$k = 0;
 				foreach( $this->meios as $meio ) {
 ?>
 		<div id="tabs-<?php echo $meio ?>" class="meio_de_pagamento <?php echo $meio ?>">
 			<fieldset>
 			<legend><?php echo $this->descricao_meios[$meio]?></legend>
-			<?php 			
-					if ( in_array( $meio, $this->meios_debito ) ) {					
+			<?php
+					if ( in_array( $meio, $this->meios_debito ) ) {
 ?>
 			<input type="radio" name="formaPagamento" value="<?php echo $meio . '_1_A' ?>" id="meio_<?php echo $k?>">
 			<label for="meio_<?php echo $k++?>"> Débito R$ <?php echo number_format( $valorDebito, 2, ',', '.' ) ?>
-			<?php 
-						if ( $this->desconto_debito ) { 
-							echo '<span class="desconto"> desconto de ' . $this->desconto_debito . '%</span>'; 
+			<?php
+						if ( $this->desconto_debito ) {
+							echo '<span class="desconto"> desconto de ' . $this->desconto_debito . '%</span>';
 						}
 			 ?>
 			</label>
 			<br />
 			<?php
-					} 
+					}
 					if ( in_array( $meio, $this->meios_credito ) ) {
 ?>
 			<input type="radio" name="formaPagamento" value="<?php echo $meio . '_1_1' ?>" id="meio_<?php echo $k?>">
 			<label for="meio_<?php echo $k++?>"> Crédito à Vista  R$ <?php echo number_format( $valor, 2, ',', '.' ) ?></label>
 			<br />
-			<?php			
+			<?php
 					}
 					if ( $i > 1 ) {
 						if ( '2' == $this->parcelamento ) { // parcelamento loja
 							$valorJuros = number_format( $valor * $this->taxa_juros/100, 2, ',', '.' );
 							$valorComJuros =  number_format( $valor * ( 1 +  $this->taxa_juros/100 ), 2, ',', '.' ) ;
-							if ( in_array( $meio, $this->meios_credito_loja ) ) { 
+							if ( in_array( $meio, $this->meios_credito_loja ) ) {
 								for ( $j = 2; $j <= $i; $j++ ) {
 	?>
 			<input type="radio" name="formaPagamento" value="<?php echo $meio . '_' . $j . '_2' ?>" id="meio_<?php echo $k?>">
@@ -421,22 +435,22 @@ jQuery( document ).ready( function() {
 ?>
 			</label>
 			<br />
-			<?php				
+			<?php
 								}
-							
-							}	
+
+							}
 						} elseif ( '3' == $this->parcelamento ) { // parcelamento administradora
-							if ( in_array( $meio, $this->meios_credito_loja ) ) { 
+							if ( in_array( $meio, $this->meios_credito_loja ) ) {
 								for ( $j = 2; $j <= $i; $j++ ) {
 	?>
 			<input type="radio" name="formaPagamento" value="<?php echo $meio . '_' . $j . '_3' ?>" id="meio_<?php echo $k?>">
 			<label for="meio_<?php echo $k++?>"> Crédito <?php echo $j ?>x R$ <?php echo number_format( $valor/$j, 2, ',', '.' ) ?> </label>
 			<br />
-			<?php				
+			<?php
 								}
-							}	
+							}
 						}
-					}	
+					}
 ?>
 			</fieldset>
 		</div>
@@ -445,7 +459,7 @@ jQuery( document ).ready( function() {
 ?>
 	</div>
 </div>
-<?php			
+<?php
 			}
 		}
 		/**
@@ -454,30 +468,37 @@ jQuery( document ).ready( function() {
 		public function validate_fields() {
 			global $woocommerce;
 			$valid = false;
-			if ( 'cielo' == $this->get_request('payment_method') ) { 
+			if ( 'cielo' == $this->get_request('payment_method') ) {
 				$valid = true;
 				$formaPagamento = $this->get_request('formaPagamento');
 				if ( empty( $formaPagamento ) ) {
 					$woocommerce->add_error( 'Selecione o cartão e a forma de pagamento desejada' );
 					$valid = false;
 				}
-			} 		
+			}
 			return $valid;
 		}
+
 		/**
 		 * Process the payment and return the result
 		 **/
 		function process_payment( $order_id ) {
-			global $woocommerce;
 			$order = new WC_Order( $order_id );
-			return array(
-				'result' 	=> 'success',
-				'redirect'	=> add_query_arg( 'formaPagamento', $this->get_request('formaPagamento'), 
-							   add_query_arg( 'order', $order->id, 
-							   add_query_arg( 'key', $order->order_key, get_permalink( woocommerce_get_page_id('pay') ))))
-			);
-		}			
-		
+
+			// Redirect to pay page.
+			if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '2.1', '>=' ) ) {
+				return array(
+					'result'   => 'success',
+					'redirect' => add_query_arg( array( 'formaPagamento' => $this->get_request( 'formaPagamento' ) ), $order->get_checkout_payment_url( true ) )
+				);
+			} else {
+				return array(
+					'result'   => 'success',
+					'redirect' => add_query_arg( array( 'key' => $order->order_key, 'order' => $order->id, 'formaPagamento' => $this->get_request( 'formaPagamento' ) ), get_permalink( woocommerce_get_page_id( 'pay' ) ) )
+				);
+			}
+		}
+
 		/**
 		 * Receipt page
 		 **/
@@ -489,15 +510,15 @@ jQuery( document ).ready( function() {
 
 			$Pedido->capturar  = $this->captura;
 			$Pedido->autorizar = $this->autorizar;
-			
-			list( 
-				$Pedido->formaPagamentoBandeira, 
+
+			list(
+				$Pedido->formaPagamentoBandeira,
 				$Pedido->formaPagamentoParcelas,
 				$Pedido->formaPagamentoProduto
 				) = explode( '_',  $this->get_request( 'formaPagamento' ) );
 
 			$descricao = $this->descricao_meios[$Pedido->formaPagamentoBandeira];
-			
+
 			switch ( $Pedido->formaPagamentoProduto ) {
 				case 'A':
 					$descricao .= ' Débito';
@@ -508,10 +529,10 @@ jQuery( document ).ready( function() {
 				default:
 					$descricao .= ' Crédito parcelado em ' . $Pedido->formaPagamentoParcelas . ' vezes';
 			}
-			
-						
+
+
 			if ( 'visa' != $Pedido->formaPagamentoBandeira && 3 != $Pedido->autorizar ) {
-					// Obs.: Para Diners, Discover, Elo e Amex o valor será sempre “3”, 
+					// Obs.: Para Diners, Discover, Elo e Amex o valor será sempre “3”,
 					// pois estas bandeiras não possuem programa de autenticação.
 				$Pedido->autorizar = 3;
 			}
@@ -525,19 +546,25 @@ jQuery( document ).ready( function() {
 					$Pedido->autorizar = 2;
 				}
 			} elseif ( 2 == $Pedido->formaPagamentoProduto && $Pedido->formaPagamentoParcelas >= $this->juros ) {
-				// parcelamento loja, adicionar juros no total 
+				// parcelamento loja, adicionar juros no total
 				$order->order_total = number_format( $order->order_total * ( 1 + $this->taxa_juros / 100 ), 2);
 					$descricao .= ', com juros adicionados';
 			}
-			
+
 			$Pedido->dadosPedidoNumero =  $order->id;
 			$Pedido->dadosPedidoValor  = str_replace( array( ',', '.'), '', $order->order_total );
-			$Pedido->urlRetorno = urlencode( htmlentities( add_query_arg('wc-api', 'wc_cielo', add_query_arg( 'retorno_cielo', 1, add_query_arg( 'order', $order->id, 	add_query_arg( 'key', $order->order_key, get_permalink(  woocommerce_get_page_id( 'thanks' ) ) ) ) ) ), ENT_QUOTES  )); 
-		
+			if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '2.1', '>=' ) ) {
+				$return_url = add_query_arg( array( 'retorno_cielo' => 1 ), $this->get_return_url( $order ) );
+			} else {
+				$return_url = add_query_arg( array( 'key' => $order->order_key, 'order' => $order->id, 'retorno_cielo' => 1 ), get_permalink( woocommerce_get_page_id( 'thanks' ) ) );
+			}
+
+			$Pedido->urlRetorno = urlencode( htmlentities( $return_url, ENT_QUOTES  ) );
+
 			echo '<p>Forma de pagamento selecionada:<br />
 				 ' . $descricao . '<br />
 				 Valor do pedido R$ ' . number_format( $Pedido->dadosPedidoValor/100 , 2, ',' , '.' ) . '</p>';
-			
+
 			echo '<p>Contactando o site da Cielo...';
 			// INICIA TRANSAÇÃO NO SITE DA CIELO
 			if ( 'test' != $this->mode ) {
@@ -551,15 +578,15 @@ jQuery( document ).ready( function() {
 			$objResposta = $Pedido->RequisicaoTransacao( false );
 
 			echo '.. contato ok.</p>';
-			
+
 			$Pedido->tid             = $this->serializemmp( $objResposta->tid );
 			$Pedido->pan             = $this->serializemmp( $objResposta->pan );
 			$Pedido->status          = $this->serializemmp( $objResposta->status );
 			$urlAutenticacao         = "url-autenticacao";
 			$Pedido->urlAutenticacao = $this->serializemmp( $objResposta->$urlAutenticacao );
-			
+
 			// Grava o pedido para checar apos pagar no site da cielo
-			
+
 			$savedPedido = $Pedido;
 			$transientName = 'order_' . $order->id;
 
@@ -573,19 +600,19 @@ jQuery( document ).ready( function() {
 				<a class="button order"  href="' . get_permalink( woocommerce_get_page_id( 'checkout' ) ) . '">'. 'Checkout' . '</a>
 				<a class="button cancel" href="' . esc_url( $order->get_cancel_order_url() ).'">'  . 'Cancelar o pedido.' . '</a>';
 		}
-		
+
 		function process_return_cielo( $order_id ) {
 			if ( $order_id ) {
 				$order = new WC_Order( $order_id );
-				if ( $order->status != 'processing' && $order->status != 'completed' ) { 
+				if ( $order->status != 'processing' && $order->status != 'completed' ) {
 					require 'include/include.php';
 					$Pedido = new Pedido();
 					$transientName = 'order_' . $order->id;
-					// recupera o pedido gravado 
+					// recupera o pedido gravado
 					if ( is_multisite() ) {
-						$Pedido = get_site_transient( $transientName ); 
+						$Pedido = get_site_transient( $transientName );
 					} else {
-						$Pedido = get_transient( $transientName ); 
+						$Pedido = get_transient( $transientName );
 					}
 					if ( false === $Pedido || empty( $Pedido ) ) {
 						$order->update_status( 'failed',  'Your payment session has expired. Please start over!' );
@@ -594,10 +621,10 @@ jQuery( document ).ready( function() {
 						$Pedido->pan             = $this->unserializemmp( $Pedido->pan );
 						$Pedido->status          = $this->unserializemmp( $Pedido->status );
 						$Pedido->urlAutenticacao = $this->unserializemmp( $Pedido->urlAutenticacao );
-		
+
 						// Consulta situação da transação
 						$objResposta = $Pedido->RequisicaoConsulta();
-						
+
 						// Atualiza status
 						$Pedido->status = $objResposta->status;
 						if ( $Pedido->status != '4' && $Pedido->status != '6' ) {
@@ -617,11 +644,11 @@ jQuery( document ).ready( function() {
 						}
 					}
 				}
-				header( 'location:' . add_query_arg( 'order', $order->id, add_query_arg( 'key', $order->order_key, get_permalink(  woocommerce_get_page_id( 'thanks' ) )  ) ) ); 
-				exit;				
+				header( 'location:' . add_query_arg( 'order', $order->id, add_query_arg( 'key', $order->order_key, get_permalink(  woocommerce_get_page_id( 'thanks' ) )  ) ) );
+				exit;
 			}
 		}
-		
+
 		function check_return_cielo() {
 			if ( $this->get_request( 'retorno_cielo' ) ) {
 				$order_id  = $this->get_request( 'order' );
@@ -634,7 +661,7 @@ jQuery( document ).ready( function() {
 				}
 			}
 		}
-		
+
         /**
         * Thank you page
         */
@@ -643,15 +670,16 @@ jQuery( document ).ready( function() {
 			$order_id = $this->get_request( 'order' );
 			$order = new WC_Order( $order_id );
 			//check again the status of the order
-			if ( $order->status == 'processing' || $order->status == 'completed' ) {                                                     
+			if ( $order->status == 'processing' || $order->status == 'completed' ) {
                 //display additional success message
 				echo '<p>Seu pagamento para ' . woocommerce_price( $order->order_total ) . ' foi recebido com sucesso. O código de autorização foi gerado, <a href="' .  add_query_arg('order', $order_id, get_permalink( woocommerce_get_page_id( 'woocommerce_view_order' ) ) ) . '">Clique aqui para ver seu pedido</a></p>';
+				do_action( 'woocommerce_thankyou_' . $order->payment_method, $order->id );
 				do_action( 'woocommerce_thankyou', $order->id );
 			} else {
 				//display additional failed message
 				echo '<p>Para maiores informações ou dúvidas quanto ao seu pedido, <a href="'. add_query_arg('order', $order_id, get_permalink( woocommerce_get_page_id( 'woocommerce_view_order' ) ) ) . '">Clique aqui para ver seu pedido</a> .</p>';
 			}
-		}		
+		}
 		/**
 		 * Testa se os dados da Cielo estão preenchidos
 		 */
@@ -683,7 +711,7 @@ jQuery( document ).ready( function() {
 			}
 			return $to_unserialize;
 		}
-	
+
 		/**
 		 * Get $_REQUEST data if set
 		 **/
@@ -703,38 +731,27 @@ jQuery( document ).ready( function() {
 		$methods[] = 'wc_cielo';
 		return $methods;
 	}
-	
-	
-	
+
+
+
 	/**
-	 * Add a direct link to settings 
+	 * Add a direct link to settings
 	 */
 	function cielo_woocommerce_plugin_action_links( $links, $file ) {
 		if ( $file == 'cielo-woocommerce/woocommerce-cielo-gateway.php' ) {
-			$settings_link = '<a href="' . admin_url( '?page=woocommerce&tab=payment_gateways&section=wc_cielo') . '">Configuração</a>';
-//			$settings_link .= '<a href="http://omniwp.com.br/">Suporte Comercial</a>';
+
+			if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '2.1', '>=' ) ) {
+				$settings_link = '<a href="' . admin_url( 'admin.php?page=wc-settings&tab=checkout&section=wc_cielo') . '">Configuração</a>';
+			} else {
+				$settings_link = '<a href="' . admin_url( 'admin.php?page=woocommerce&tab=payment_gateways&section=wc_cielo') . '">Configuração</a>';
+			}
+
 			array_unshift( $links, $settings_link ); // before other links
 		}
 		return $links;
 	}
-	
-	/**
-	 * Add a notice if configuration is due
-	 */
-	function cielo_woocommerce_plugin_notice( $plugin ) {
-		if ( $plugin == 'cielo-woocommerce/woocommerce-cielo-gateway.php' ) {
-			$cielo_settings = get_option( 'woocommerce_cielo_settings', true );
-			if ( 'yes' == $cielo_settings['enabled']  
-				&& ( empty( $cielo_settings['numero'] ) || empty( $cielo_settings['chave'] ) || empty( $cielo_settings['meios'] ) ) ) {
-			echo '<td colspan="5" class="plugin-update"><a href="' . admin_url( '?page=woocommerce&tab=payment_gateways&section=wc_cielo') . '">Você precisa configurar o Cielo WooCommerce.</a></td>';
-			}				
-		}
-	}
-
 
 	add_filter( 'woocommerce_payment_gateways', 'cielo_woocommerce_add_cielo_gateway' );
 	add_filter( 'plugin_action_links',          'cielo_woocommerce_plugin_action_links', 10, 2 );
-	add_action( 'after_plugin_row', 'cielo_woocommerce_plugin_notice' );
 
-} 
-?>
+}
