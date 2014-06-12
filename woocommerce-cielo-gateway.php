@@ -5,7 +5,7 @@
  * Description: Adiciona a opção de pagamento pela Cielo ao WooCommerce - Compatível com o XML versão 1.2.0, lançado em janeiro de 2012
  * Author: Gabriel Reguly, omniWP, claudiosanches
  * Author URI: http://omniwp.com.br
- * Version: 2.0.7
+ * Version: 2.0.8
  * License: GPLv2 or later
  * Text Domain: woocommerce-pagarme
  * Domain Path: /languages/
@@ -554,9 +554,9 @@ jQuery( document ).ready( function() {
 			$Pedido->dadosPedidoNumero =  $order->id;
 			$Pedido->dadosPedidoValor  = str_replace( array( ',', '.'), '', $order->order_total );
 			if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '2.1', '>=' ) ) {
-				$return_url = add_query_arg( array( 'retorno_cielo' => 1 ), $this->get_return_url( $order ) );
+				$return_url = add_query_arg( array( 'key' => $order->order_key, 'order' => $order->id, 'retorno_cielo' => 1 ), WC()->api_request_url( 'wc_cielo' ) );
 			} else {
-				$return_url = add_query_arg( array( 'key' => $order->order_key, 'order' => $order->id, 'retorno_cielo' => 1 ), get_permalink( woocommerce_get_page_id( 'thanks' ) ) );
+				$return_url = add_query_arg( array( 'key' => $order->order_key, 'order' => $order->id, 'retorno_cielo' => 1 ), $woocommerce->api_request_url( 'wc_cielo' ) );
 			}
 
 			$Pedido->urlRetorno = urlencode( htmlentities( $return_url, ENT_QUOTES  ) );
@@ -595,9 +595,16 @@ jQuery( document ).ready( function() {
 			} else {
 				set_transient( $transientName, $savedPedido, 518400 );
 			}
+
+			if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '2.1', '>=' ) ) {
+				$checkout_url = get_permalink( wc_get_page_id( 'checkout' ) );
+			} else {
+				$checkout_url = get_permalink( woocommerce_get_page_id( 'checkout' ) );
+			}
+
 			echo '
 				<a class="button pay"    href="' . esc_url( $objResposta->$urlAutenticacao ) . '">'. 'Pagar' . '</a>
-				<a class="button order"  href="' . get_permalink( woocommerce_get_page_id( 'checkout' ) ) . '">'. 'Checkout' . '</a>
+				<a class="button order"  href="' . $checkout_url . '">'. 'Checkout' . '</a>
 				<a class="button cancel" href="' . esc_url( $order->get_cancel_order_url() ).'">'  . 'Cancelar o pedido.' . '</a>';
 		}
 
@@ -614,6 +621,7 @@ jQuery( document ).ready( function() {
 					} else {
 						$Pedido = get_transient( $transientName );
 					}
+
 					if ( false === $Pedido || empty( $Pedido ) ) {
 						$order->update_status( 'failed',  'Your payment session has expired. Please start over!' );
 					} else {
@@ -634,7 +642,7 @@ jQuery( document ).ready( function() {
 							// Order paid
 							$order->add_order_note( $Pedido->getStatus() . ' TID:' . $Pedido->tid );
 							// Reduce stock levels
-							$order->reduce_order_stock();
+							// $order->reduce_order_stock();
 							$order->payment_complete();
 						}
 						if ( is_multisite() ) {
@@ -644,13 +652,25 @@ jQuery( document ).ready( function() {
 						}
 					}
 				}
-				header( 'location:' . add_query_arg( 'order', $order->id, add_query_arg( 'key', $order->order_key, get_permalink(  woocommerce_get_page_id( 'thanks' ) )  ) ) );
+
+				if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '2.1', '>=' ) ) {
+					$redirect_url = $this->get_return_url( $order );
+				} else {
+					$redirect_url = add_query_arg( 'order', $order->id, add_query_arg( 'key', $order->order_key, get_permalink( woocommerce_get_page_id( 'thanks' ) ) ) );
+				}
+
+				wp_redirect( $redirect_url );
 				exit;
 			}
 		}
 
 		function check_return_cielo() {
+			@ob_clean();
+
 			if ( $this->get_request( 'retorno_cielo' ) ) {
+				header( 'HTTP/1.1 200 OK' );
+
+
 				$order_id  = $this->get_request( 'order' );
 				$order_key = $this->get_request( 'key' );
 				if ( $order_id ) {
@@ -665,19 +685,23 @@ jQuery( document ).ready( function() {
         /**
         * Thank you page
         */
-		function thank_you_page () {
+		function thank_you_page( $order_id ) {
 			global $woocommerce;
-			$order_id = $this->get_request( 'order' );
+
 			$order = new WC_Order( $order_id );
+			if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '2.1', '>=' ) ) {
+				$order_url = $order->get_view_order_url();
+			} else {
+				$order_url = add_query_arg( 'order', $order_id, get_permalink( woocommerce_get_page_id( 'woocommerce_view_order' ) ) );
+			}
+
 			//check again the status of the order
 			if ( $order->status == 'processing' || $order->status == 'completed' ) {
                 //display additional success message
-				echo '<p>Seu pagamento para ' . woocommerce_price( $order->order_total ) . ' foi recebido com sucesso. O código de autorização foi gerado, <a href="' .  add_query_arg('order', $order_id, get_permalink( woocommerce_get_page_id( 'woocommerce_view_order' ) ) ) . '">Clique aqui para ver seu pedido</a></p>';
-				do_action( 'woocommerce_thankyou_' . $order->payment_method, $order->id );
-				do_action( 'woocommerce_thankyou', $order->id );
+				echo '<p>Seu pagamento para ' . woocommerce_price( $order->order_total ) . ' foi recebido com sucesso. O código de autorização foi gerado, <a href="' . $order_url . '">Clique aqui para ver seu pedido</a></p>';
 			} else {
 				//display additional failed message
-				echo '<p>Para maiores informações ou dúvidas quanto ao seu pedido, <a href="'. add_query_arg('order', $order_id, get_permalink( woocommerce_get_page_id( 'woocommerce_view_order' ) ) ) . '">Clique aqui para ver seu pedido</a> .</p>';
+				echo '<p>Para maiores informações ou dúvidas quanto ao seu pedido, <a href="' . $order_url . '">Clique aqui para ver seu pedido</a> .</p>';
 			}
 		}
 		/**
