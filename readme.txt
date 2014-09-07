@@ -1,10 +1,10 @@
 === Cielo WooCommerce ===
 Contributors: Gabriel Reguly, claudiosanches
-Donate link: http://omniwp.com.br/donate/
+Donate link: http://claudiosmweb.com/doacoes/
 Tags: WooCommerce, Payment Gateway, Cielo
 Requires at least: 3.5
-Tested up to: 3.9.1
-Stable tag: 3.0.3
+Tested up to: 4.0
+Stable tag: 3.1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -185,12 +185,21 @@ Para produtos baixáveis a configuração padrão do WooCommerce é permitir o a
 
 = É possível cancelar o pagamento/devolver o dinheiro do cliente pelo plugin? =
 
-Sim, isto é possível mudando o status do pedido para "reembolsado", desta forma é enviado um sinal para a Cielo dizendo que a transação deve ser cancelada.
+Sim é possível fazer reembolsos do valor total ou parcial, entretanto apenas para transações feitas em menos de 90 dias, 
 
-* Nota 1: Apenas pagamentos feitos em menos de 90 dias podem ser reembolsados.
-* Nota 2: Isto irá funcionar apenas para pagamentos feitos depois de instalada a versão 3.0.0 deste plugin.
+**Reembolso total**
 
-Não é possível ainda fazer devoluções parciais do total do pedido, por enquanto é reembolsado o valor inteiro como descrito acima. Pretendemos implementar este recurso em breve.
+Basta mudar o status do pedido para "reembolsado", desta forma é enviado um sinal para a Cielo dizendo que a transação deve ser cancelada e o valor reembolsado.
+
+* Nota: Isto irá funcionar apenas para pagamentos feitos depois de instalada a versão 3.0.0 deste plugin.
+
+**Reembolso parcial**
+
+A partir do WooCommerce 2.2 foi implementada uma API e uma interface para fazer reembolsos parciais e este plugin a partir da versão 3.1.0 esta totalmente integrado com esta nova API.
+
+Desta forma basta fazer o reembolso na tela do pedido, assim será enviado um sinal para a Cielo dizendo qual o valor deve ser reembolsado.
+
+* Nota: Para reembolsos parciais você deve utilizar o WooCommerce 2.2 ou superior, além de que os pedidos devem ter sido feitos nesta versão e também com o Cielo WooCommerce na versão 3.1.0 ou superior.
 
 = Aconteceu um erro, o que eu faço? =
 
@@ -237,6 +246,11 @@ Ao criar um formulário customizado pode ser boa ideia remover os scripts adicio
 2. Checkout com o formulário utilizando ícones dos cartões.
 
 == Changelog ==
+
+= 3.1.0 - 07/09/2014 =
+
+* Adicionado suporte para reembolsos parciais do WooCommerce 2.2.
+* Melhorada a compatibilidade com o WordPress 4.0.
 
 = 3.0.3 - 25/06/2014 =
 
@@ -313,21 +327,10 @@ Ao criar um formulário customizado pode ser boa ideia remover os scripts adicio
 
 == Upgrade Notice ==
 
-= 3.0.3 =
+= 3.1.0 =
 
-* Refatorado todo o código do plugin.
-* Adicionado completo suporte para as versões 2.0.x e 2.1.x do WooCommerce
-* Atualizada a versão da API da Cielo para 1.3.0.
-* Adicionada ação de cancelar a transação (devolver o dinheiro) ao marcar o pedido como "reembolsado".
-* Adicionada novas formas de exibir o formulário com os cartões de crédito e parcelas disponíveis.
-* Removida a opção de captura (não tinha utilidade e a melhor forma de trabalhar é capturar automaticamente sempre).
-* Adicionado suporte para os cartões JBC e Aura.
-* Adicionado opção de pagamento por débito para o MasterCard.
-* Adicionada uma mensagem informando o cartão, forma de pagamento (crédito ou débito) e quantidade de parcelas nas notas do pedido ao concluir o pagamento.
-* Adicionado filtro wc_cielo_form_path, que torna possível customizar o formulário de seleção do cartão e de parcelas.
-* Permitido valores inferiores a R$ 5,00 para pagamento à vista em cartão de crédito.
-* Quando cancelado o pagamento na tela da Cielo o cliente é redirecionado para o caralogo do WooCommerce.
-* Adicionada opção para selecionar os métodos de débito disponíveis.
+* Adicionado suporte para reembolsos parciais do WooCommerce 2.2.
+* Melhorada a compatibilidade com o WordPress 4.0.
 
 == License ==
 
