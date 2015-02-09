@@ -132,6 +132,19 @@ class WC_Cielo_Gateway extends WC_Payment_Gateway {
 	}
 
 	/**
+	 * Get log file path
+	 *
+	 * @return string
+	 */
+	public function get_log_file_path() {
+		if ( function_exists( 'wc_get_log_file_path' ) ) {
+			return '<code><a href="' . admin_url( 'admin.php?page=wc-status&tab=logs' ) . '" title="' . __( 'View log file', 'cielo-woocommerce' ) . '">' . wc_get_log_file_path( $this->id ) . '</a></code>';
+		} else {
+			return '<code>woocommerce/logs/' . esc_attr( $this->id ) . '-' . sanitize_file_name( wp_hash( $this->id ) ) . '.txt</code>';
+		}
+	}
+
+	/**
 	 * Initialise Gateway Settings Form Fields
 	 */
 	public function init_form_fields() {
@@ -313,9 +326,16 @@ class WC_Cielo_Gateway extends WC_Payment_Gateway {
 				'type'        => 'checkbox',
 				'label'       => __( 'Enable logging', 'cielo-woocommerce' ),
 				'default'     => 'no',
-				'description' => sprintf( __( 'Log Cielo events, such as API requests, inside %s', 'cielo-woocommerce' ), '<code>woocommerce/logs/' . esc_attr( $this->id ) . '-' . sanitize_file_name( wp_hash( $this->id ) ) . '.txt</code>' )
+				'description' => sprintf( __( 'Log Cielo events, such as API requests, inside %s', 'cielo-woocommerce' ),  $this->get_log_file_path() )
 			)
 		);
+	}
+
+	/**
+	 * Admin page.
+	 */
+	public function admin_options() {
+		include 'views/html-admin-page.php';
 	}
 
 	/**
