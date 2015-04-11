@@ -31,13 +31,14 @@ class WC_Cielo_XML extends SimpleXMLElement {
 	/**
 	 * Add order data.
 	 *
-	 * @param WC_Order $order       WooCommerce order data.
-	 * @param float    $total       Order total.
-	 * @param int      $currency    Order currency.
-	 * @param string   $language    Data language.
-	 * @param string   $description Description.
+	 * @param WC_Order $order           WooCommerce order data.
+	 * @param float    $total           Order total.
+	 * @param int      $currency        Order currency.
+	 * @param string   $language        Data language.
+	 * @param string   $description     Description.
+	 * @param string   $soft_descriptor Soft descriptor.
 	 */
-	public function add_order_data( $order, $total, $currency, $language, $description = '' ) {
+	public function add_order_data( $order, $total, $currency, $language, $description = '', $soft_descriptor = '' ) {
 		$order_data = $this->addChild( 'dados-pedido' );
 		$order_data->addChild( 'numero', $order->id );
 		$order_data->addChild( 'valor', number_format( $total, 2, '', '' ) );
@@ -47,9 +48,35 @@ class WC_Cielo_XML extends SimpleXMLElement {
 			$order_data->addChild( 'descricao', $description );
 		}
 		$order_data->addChild( 'idioma', $language );
-		$order_data->addChild( 'soft-descriptor', '' );
+
+		if ( '' != $soft_descriptor ) {
+			$order_data->addChild( 'soft-descriptor', trim( substr( $soft_descriptor, 0, 13 ) ) );
+		}
 	}
 
+	/**
+	 * Add the credit card data.
+	 *
+	 * @param string $card_number
+	 * @param string $card_expiry
+	 * @param string $card_cvv
+	 * @param string $holder_name
+	 */
+	public function add_card_data( $card_number, $card_expiry, $card_cvv, $holder_name ) {
+		$card_data =  $this->addChild( 'dados-portador' );
+		$card_data->addChild( 'numero', preg_replace( '([^0-9])', '', sanitize_text_field( $card_number ) ) );
+
+		$expiry_date = explode( '/', sanitize_text_field( $card_expiry ) );
+		$expiry_date = trim( $expiry_date[1] ) . trim( $expiry_date[0] );
+		$expiry_date = ( 4 == strlen( $expiry_date ) ) ? '20' . $expiry_date : $expiry_date;
+		$card_data->addChild( 'validade', $expiry_date );
+
+		// For now all the cards must have cvv there for it is always set at 1.
+		// For more information see page 11 of Manual Desenvovedor de Webservice Cielo v. 2.54.
+		$card_data->addChild( 'indicador', 1 );
+		$card_data->addChild( 'codigo-seguranca', preg_replace( '([^0-9])', '', sanitize_text_field( $card_cvv ) ) );
+		$card_data->addChild( 'nome-portador', sanitize_text_field( $holder_name ) );
+	}
 	/**
 	 * Add payment data.
 	 *
