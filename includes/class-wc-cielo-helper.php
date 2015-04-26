@@ -283,7 +283,7 @@ abstract class WC_Cielo_Helper extends WC_Payment_Gateway {
 			return true;
 		}
 
-		return 'yes' == get_option( 'woocommerce_force_ssl_checkout' ) && class_exists( 'WordPressHTTPS' );
+		return 'yes' == get_option( 'woocommerce_force_ssl_checkout' ) && is_ssl();
 	}
 
 	/**
@@ -739,7 +739,7 @@ abstract class WC_Cielo_Helper extends WC_Payment_Gateway {
 				}
 			}
 
-			wp_redirect( $return_url );
+			wp_redirect( esc_url_raw( $return_url ) );
 			exit;
 		} else {
 			if ( function_exists( 'wc_get_page_id' ) ) {
@@ -748,7 +748,7 @@ abstract class WC_Cielo_Helper extends WC_Payment_Gateway {
 				$cart_url = get_permalink( woocommerce_get_page_id( 'cart' ) );
 			}
 
-			wp_redirect( $cart_url );
+			wp_redirect( esc_url_raw( $cart_url ) );
 			exit;
 		}
 	}
@@ -769,10 +769,11 @@ abstract class WC_Cielo_Helper extends WC_Payment_Gateway {
 			return false;
 		}
 
-		$diff = ( strtotime( $order->order_date ) - strtotime( current_time( 'mysql' ) ) );
-		$days = absint( $diff / ( 60 * 60 * 24 ) );
+		$diff  = ( strtotime( $order->order_date ) - strtotime( current_time( 'mysql' ) ) );
+		$days  = absint( $diff / ( 60 * 60 * 24 ) );
+		$limit = 120;
 
-		if ( 90 > $days ) {
+		if ( $limit > $days ) {
 			$tid      = $order->get_transaction_id();
 			$gateway  = new WC_Cielo_Gateway();
 			$amount   = number_format( wc_format_decimal( $amount ), 2, '', '' );
@@ -792,7 +793,7 @@ abstract class WC_Cielo_Helper extends WC_Payment_Gateway {
 			}
 
 		} else {
-			return new WP_Error( 'cielo_refund_error', __( 'This transaction has been made ​​more than 90 days and therefore it can not be canceled', 'cielo-woocommerce' ) );
+			return new WP_Error( 'cielo_refund_error', sprintf( __( 'This transaction has been made ​​more than %s days and therefore it can not be canceled', 'cielo-woocommerce' ), $limit ) );
 		}
 
 		return false;
@@ -814,9 +815,9 @@ abstract class WC_Cielo_Helper extends WC_Payment_Gateway {
 		}
 
 		if ( $order->status == 'processing' || $order->status == 'completed' ) {
-			echo '<div class="woocommerce-message"><a href="' . $order_url . '" class="button" style="display: block !important; visibility: visible !important;">' . __( 'View order details', 'cielo-woocommerce' ) . '</a>' . sprintf( __( 'Your payment has been received successfully.', 'cielo-woocommerce' ), woocommerce_price( $order->order_total ) ) . '<br />' . __( 'The authorization code was generated.', 'cielo-woocommerce' ) . '</div>';
+			echo '<div class="woocommerce-message"><a href="' . esc_url( $order_url ) . '" class="button" style="display: block !important; visibility: visible !important;">' . __( 'View order details', 'cielo-woocommerce' ) . '</a>' . sprintf( __( 'Your payment has been received successfully.', 'cielo-woocommerce' ), woocommerce_price( $order->order_total ) ) . '<br />' . __( 'The authorization code was generated.', 'cielo-woocommerce' ) . '</div>';
 		} else {
-			echo '<div class="woocommerce-info">' . sprintf( __( 'For more information or questions regarding your order, go to the %s.', 'cielo-woocommerce' ), '<a href="' . $order_url . '">' . __( 'order details page', 'cielo-woocommerce' ) . '</a>' ) . '</div>';
+			echo '<div class="woocommerce-info">' . sprintf( __( 'For more information or questions regarding your order, go to the %s.', 'cielo-woocommerce' ), '<a href="' . esc_url( $order_url ) . '">' . __( 'order details page', 'cielo-woocommerce' ) . '</a>' ) . '</div>';
 		}
 	}
 }
