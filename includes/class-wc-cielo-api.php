@@ -142,6 +142,41 @@ class WC_Cielo_API {
 	}
 
 	/**
+	 * Get credit card brand.
+	 *
+	 * @param  string $number
+	 *
+	 * @return string
+	 */
+	public function get_card_brand( $number ) {
+		$number = preg_replace( '([^0-9])', '', $number );
+		$brand  = '';
+
+		// https://gist.github.com/arlm/ceb14a05efd076b4fae5
+		$supported_brands = array(
+			'visa'       => '/^4\d{12}(\d{3})?$/',
+			'mastercard' => '/^(5[1-5]\d{4}|677189)\d{10}$/',
+			'diners'     => '/^3(0[0-5]|[68]\d)\d{11}$/',
+			'discover'   => '/^6(?:011|5[0-9]{2})[0-9]{12}$/',
+			'elo'        => '/^((((636368)|(438935)|(504175)|(451416)|(636297))\d{0,10})|((5067)|(4576)|(4011))\d{0,12})$/',
+			'amex'       => '/^3[47]\d{13}$/',
+			'jcb'        => '/^(?:2131|1800|35\d{3})\d{11}$/',
+			'aura'       => '/^(5078\d{2})(\d{2})(\d{11})$/',
+			'hipercard'  => '/^(606282\d{10}(\d{3})?)|(3841\d{15})$/',
+			'maestro'    => '/^(?:5[0678]\d\d|6304|6390|67\d\d)\d{8,15}$/',
+		);
+
+		foreach ( $supported_brands as $key => $value ) {
+			if ( preg_match( $value, $number ) ) {
+				$brand = $key;
+				break;
+			}
+		}
+
+		return $brand;
+	}
+
+	/**
 	 * Get language.
 	 *
 	 * @return string
@@ -230,7 +265,7 @@ class WC_Cielo_API {
 	public function do_transaction( $order, $id, $card_brand, $installments = 0, $credit_card_data = array(), $is_debit = false ) {
 		$account_data    = $this->get_account_data();
 		$payment_product = '1';
-		$order_total     = $order->order_total;
+		$order_total     = (float) $order->get_total();
 		$authorization   = $this->gateway->authorization;
 
 		// Set the authorization.
@@ -240,12 +275,12 @@ class WC_Cielo_API {
 
 		// Set the order total with interest.
 		if ( isset( $this->gateway->installment_type ) && 'client' == $this->gateway->installment_type && $installments >= $this->gateway->interest ) {
-			$order_total = $order->order_total * ( ( 100 + $this->gateway->get_valid_value( $this->gateway->interest_rate ) ) / 100 );
+			$order_total = $order_total * ( ( 100 + $this->gateway->get_valid_value( $this->gateway->interest_rate ) ) / 100 );
 		}
 
 		// Set the debit values.
 		if ( $is_debit ) {
-			$order_total     = $order->order_total * ( ( 100 - $this->gateway->get_valid_value( $this->gateway->debit_discount ) ) / 100 );
+			$order_total     = $order_total * ( ( 100 - $this->gateway->get_valid_value( $this->gateway->debit_discount ) ) / 100 );
 			$payment_product = 'A';
 			$installments    = '1';
 			$authorization   = ( 3 == $authorization ) ? 2 : $authorization;
