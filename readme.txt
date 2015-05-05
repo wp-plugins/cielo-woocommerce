@@ -4,7 +4,7 @@ Donate link: https://claudiosmweb.com/doacoes/
 Tags: woocommerce, cielo, payment gateway
 Requires at least: 3.9
 Tested up to: 4.2.1
-Stable tag: 4.0.5
+Stable tag: 4.0.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -160,7 +160,7 @@ Para produtos baixáveis a configuração padrão do WooCommerce é permitir o a
 
 = É possível cancelar o pagamento/devolver o dinheiro do cliente pelo plugin? =
 
-Sim é possível fazer reembolsos do valor total ou parcial, entretanto apenas para transações feitas em menos de 120 dias, 
+Sim é possível fazer reembolsos do valor total ou parcial, entretanto apenas para transações feitas em menos de 120 dias,
 
 **Reembolso total**
 
