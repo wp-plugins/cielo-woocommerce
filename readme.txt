@@ -3,8 +3,8 @@ Contributors: Gabriel Reguly, claudiosanches, gopaulo
 Donate link: https://claudiosmweb.com/doacoes/
 Tags: woocommerce, cielo, payment gateway
 Requires at least: 3.9
-Tested up to: 4.2.1
-Stable tag: 4.0.6
+Tested up to: 4.2.2
+Stable tag: 4.0.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -160,7 +160,7 @@ Para produtos baixáveis a configuração padrão do WooCommerce é permitir o a
 
 = É possível cancelar o pagamento/devolver o dinheiro do cliente pelo plugin? =
 
-Sim é possível fazer reembolsos do valor total ou parcial, entretanto apenas para transações feitas em menos de 120 dias,
+Sim é possível fazer reembolsos do valor total ou parcial, entretanto apenas para transações feitas em menos de 120 dias, 
 
 **Reembolso total**
 
@@ -197,6 +197,11 @@ Esta mensagem geralmente irá aparecer quando o seu servidor tiver problemas par
 2. Página de finalização utilizando o tema Storefront, mostrando as opções de crédito e débito na Solução Webservice.
 
 == Changelog ==
+
+= 4.0.7 - 2015/05/08 =
+
+* Alterado os atributos "name" dos campos de débito e crédito para a Solução Webservice.
+* Corrigido erros na identificação da bandeira de cartões com a Solução Webservice.
 
 = 4.0.6 - 2015/05/03 =
 
@@ -321,9 +326,10 @@ Esta mensagem geralmente irá aparecer quando o seu servidor tiver problemas par
 
 == Upgrade Notice ==
 
-= 4.0.6 =
+= 4.0.7 =
 
-* Correção da validação de bandeira dos cartões de débito para a Solução Webservice.
+* Alterado os atributos "name" dos campos de débito e crédito para a Solução Webservice.
+* Corrigido erros na identificação da bandeira de cartões com a Solução Webservice.
 
 == License ==
 
