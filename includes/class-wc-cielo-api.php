@@ -269,13 +269,19 @@ class WC_Cielo_API {
 		$authorization   = $this->gateway->authorization;
 
 		// Set the authorization.
-		if ( in_array( $card_brand, $this->gateway->get_accept_authorization() ) && 3 != $authorization ) {
+		if ( in_array( $card_brand, $this->gateway->get_accept_authorization() ) && 3 != $authorization && ! $is_debit ) {
 			$authorization = 3;
 		}
 
 		// Set the order total with interest.
 		if ( isset( $this->gateway->installment_type ) && 'client' == $this->gateway->installment_type && $installments >= $this->gateway->interest ) {
-			$order_total = $order_total * ( ( 100 + $this->gateway->get_valid_value( $this->gateway->interest_rate ) ) / 100 );
+			$interest_rate        = $this->gateway->get_valid_value( $this->gateway->interest_rate ) / 100;
+			$interest_total       = $order_total * ( $interest_rate / ( 1 - ( 1 / pow( 1 + $interest_rate, $installments ) ) ) );
+			$interest_order_total = $interest_total * $installments;
+
+			if ( $order_total < $interest_order_total ) {
+				$order_total = round( $interest_order_total, 2 );
+			}
 		}
 
 		// Set the debit values.
@@ -283,7 +289,6 @@ class WC_Cielo_API {
 			$order_total     = $order_total * ( ( 100 - $this->gateway->get_valid_value( $this->gateway->debit_discount ) ) / 100 );
 			$payment_product = 'A';
 			$installments    = '1';
-			$authorization   = ( 3 == $authorization ) ? 2 : $authorization;
 		}
 
 		// Set the product when has installments.
@@ -413,7 +418,7 @@ class WC_Cielo_API {
 	 *
 	 * @return array
 	 */
-	public function do_transaction_cancellation( $order, $tid, $id, $amount = null ) {
+	public function do_transaction_cancellation( $order, $tid, $id, $amount = 0 ) {
 		$account_data = $this->get_account_data();
 		$xml          = new WC_Cielo_XML( '<?xml version="1.0" encoding="' . $this->charset . '"?><requisicao-cancelamento id="' . $id . '" versao="' . self::VERSION . '"></requisicao-cancelamento>' );
 		$xml->add_tid( $tid );
@@ -427,7 +432,7 @@ class WC_Cielo_API {
 		$data = $xml->render();
 
 		if ( 'yes' == $this->gateway->debug ) {
-			$this->gateway->log->add( $this->gateway->id, 'Canceling the transaction for the order ' . $order->get_order_number() . '...' );
+			$this->gateway->log->add( $this->gateway->id, 'Refunding ' . $amount . ' from order ' . $order->get_order_number() . '...' );
 		}
 
 		// Do the request.
@@ -462,7 +467,7 @@ class WC_Cielo_API {
 		}
 
 		if ( 'yes' == $this->gateway->debug ) {
-			$this->gateway->log->add( $this->gateway->id, 'Order ' . $order->get_order_number() . ' canceled successfully' );
+			$this->gateway->log->add( $this->gateway->id, 'Refunded ' . $amount . ' from order ' . $order->get_order_number() . ' successfully!' );
 		}
 
 		return $body;
