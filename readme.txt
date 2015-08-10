@@ -1,10 +1,10 @@
-=== Cielo WooCommerce ===
-Contributors: Gabriel Reguly, claudiosanches
-Donate link: http://claudiosmweb.com/doacoes/
-Tags: WooCommerce, Payment Gateway, Cielo
-Requires at least: 3.5
-Tested up to: 4.0
-Stable tag: 3.1.1
+=== Cielo WooCommerce - Solução Webservice ===
+Contributors: Gabriel Reguly, claudiosanches, gopaulo
+Donate link: https://claudiosmweb.com/doacoes/
+Tags: woocommerce, cielo, payment gateway
+Requires at least: 3.9
+Tested up to: 4.3
+Stable tag: 4.0.10
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,23 +12,11 @@ Adds Brazilian payment gateway Cielo to WooCommerce
 
 == Description ==
 
-### Adds Brazilian payment gateway Cielo to WooCommerce. ###
-
-The Cielo WooCommerce plugin enables integration with WooCommerce and the Cielo Payment Gateway (for Brazilian Merchants).
-
-Please notice that WooCommerce must be installed and active.
-
-= Contribute =
-
-You can contribute to the source code in our [GitHub](https://github.com/greguly/cielo-woocommerce) page.
-
-### Descrição em Português: ###
-
-Utilize a Cielo em sua loja WooCommerce e permita os seus clientes pagarem com cartão de crédito ou débido.
+Utilize a Solução Webservice da Cielo em sua loja WooCommerce e permita os seus clientes pagarem com cartão de crédito ou débido.
 
 A [Cielo](http://www.cielo.com.br/) é uma empresa líder em soluções de pagamentos eletrônicos na América Latina. Responsável pelo credenciamento de estabelecimentos comerciais, e pela captura, transmissão, processamento e liquidação financeira das transações realizadas com cartões de crédito e débito, capturando transações das maiores bandeiras de cartões do mundo.
 
-Estão disponíveis as seguintes bandeiras:
+= Estão disponíveis as seguintes bandeiras: =
 
 * Visa (crédito e débido)
 * MasterCard (crédito e débido)
@@ -39,20 +27,24 @@ Estão disponíveis as seguintes bandeiras:
 * JCB
 * Aura
 
-Com este plugin é possível escolher entre os modelos de *BuyPage*:
+= Com este plugin é possível trabalhar com: =
 
-* Cielo
-* Loja (ainda não implementado, será possível em breve)
+* Solução Webservice.
+* BuyPage Cielo (antigo e será desativado pela Cielo em breve).
+
+Nota: O Checkout Cielo esta disponível no plugin [WooCommerce Checkout Cielo](https://wordpress.org/plugins/woocommerce-checkout-cielo/).
 
 = Desenvolvimento =
 
 O plugin **Cielo WooCommerce** foi desenvolvido sem nenhum incentivo da Cielo. Isto quer dizer que nenhum dos desenvolvedores deste plugin possuem vínculos com a Cielo e contamos com a sua ajuda para melhorar o código e o funcionamento deste plugin.
 
-Toda a integração foi desenvolvida a partir da última versão do [kit de integração da Cielo](http://www.cielo.com.br/portal/cielo/solucoes-de-tecnologia/e-commerce.html).
+Toda a integração foi desenvolvida a partir da última versão do [Manual do Desenvolvedor da Cielo](https://www.cielo.com.br/ecommerce).
 
 = Compatibilidade =
 
-Compatível com as versões 2.0.x e 2.1.x do [WooCommerce](http://wordpress.org/plugins/woocommerce/).
+Compatível com a versão 2.3.x ou 2.4.x do [WooCommerce](http://wordpress.org/plugins/woocommerce/).
+
+Note que o antigo BuyPage Cielo ainda é compatível com as versões 2.1.x, 2.2.x, 2.3.x e 2.4.x do WooCommerce.
 
 = Instalação =
 
@@ -77,12 +69,6 @@ Você pode contribuir com código-fonte em nossa página no [GitHub](https://git
 
 == Installation ==
 
-* Upload plugin files to your plugins folder, or install using WordPress built-in Add New Plugin installer;
-* Activate the plugin;
-* Navigate to WooCommerce -> Settings -> Payment Gateways, choose Cielo and fill the plugin options.
-
-### Instalação e configuração em Português: ###
-
 = Instalação do plugin: =
 
 * Envie os arquivos do plugin para a pasta wp-content/plugins, ou instale usando o instalador de plugins do WordPress.
@@ -106,7 +92,7 @@ O plugin funciona com os ambientes de **Teste** e **Produção**, onde você dev
 
 #### Notas sobre o ambiente de testes ####
 
-No ambiente de **Testes** é possível utilizar alguns cartões de teste disponíveis no [kit de integração da Cielo](http://www.cielo.com.br/portal/cielo/solucoes-de-tecnologia/e-commerce.html), basta fazer o download do kit e ler o arquivo "Cielo e-Commerce - Manual do Desenvolvedor X.X.X.X.pdf" que esta dentro da pasta "Materiais Técnicos".
+No ambiente de **Testes** é possível utilizar alguns cartões de teste disponíveis no [Manual do Desenvolvedor Cielo](https://www.cielo.com.br/ecommerce), basta fazer o download do kit e ler o arquivo "Manual_Desenvolvedor_WebService_XXX_vX.pdf".
 
 Outra coisa importante é saber que o ambiente de **Testes** tem alguns comportamentos peculiares que você deve conhecer para poder utilizá-lo com eficiência:
 
@@ -117,24 +103,13 @@ Outra coisa importante é saber que o ambiente de **Testes** tem alguns comporta
 
 == Frequently Asked Questions ==
 
-= What is the plugin license? =
-
-* This plugin is released under a GPL license.
-
-= What is needed to use this plugin? =
-
-* WooCommerce version 2.0.x or latter installed and active.
-* Follow our [installation guide](http://wordpress.org/plugins/cielo-woocommerce/installation/).
-
-### FAQ em Português: ###
-
 = Qual é a licença do plugin? =
 
 Este plugin esta licenciado como GPL.
 
 = O que eu preciso para utilizar este plugin? =
 
-* WooCommerce versão 2.0.x ou superior instalado e ativado.
+* WooCommerce versão 2.1.x ou superior instalado e ativado.
 * Seguir o nosso [guia de instalação](http://wordpress.org/plugins/cielo-woocommerce/installation/).
 
 = São aceitas quais moedas? =
@@ -152,20 +127,20 @@ No momento apenas Real (BRL).
 * JCB
 * Aura
 
-= Quais são os modelos de BuyPage disponíveis? =
+= Quais são os modelos de checkout disponíveis? =
 
-* Cielo
-* Loja (ainda não implementado, será possível em breve)
+* Solução Webservice.
+* BuyPage Cielo (antigo e será desativado pela Cielo em breve).
+
+= Como funciona a Solução Webservice? =
+
+Com a Solução Webservice a digitação dos dados do cartão será no ambiente da loja. Ou seja, a própria loja se encarrega do desenvolvimento de uma página segura na Internet (HTTPS), respeitando políticas de segurança, para capturar os dados do cartão do portador.
 
 = Como funciona a BuyPage Cielo? =
 
 Na BuyPage Cielo a digitação dos dados do cartão será no ambiente da Cielo. Geralmente é aconselhada a clientes que não queiram lidar com questões de segurança e desejam utilizar a infraestrutura da Cielo.
 
-= Como funciona a BuyPage Loja? =
-
-Na BuyPage Loja a digitação dos dados do cartão será no ambiente da Loja. Ou seja, a própria Loja se encarrega do desenvolvimento de uma página segura na Internet (HTTPS), respeitando políticas de segurança, para capturar os dados do cartão do portador.
-
-Este modelo de BuyPage não esta disponível ainda no plugin, iremos implementar em breve e contamos com a sua ajuda, tanto para a melhoria do código e implementação desta feature como também para doações (desta forma você ajuda os desenvolvedores deste plugin a ter mais tempo livre para implementar esta funcionalidade).
+Entretanto a Cielo esta desativando esta opção em favor do Checkout Cielo, então em breve o BuyPage Cielo não irá mais funcionar.
 
 = É possível usar o pagamento por celular? =
 
@@ -175,7 +150,7 @@ No momento ainda não é possível, entretanto pretendemos integrar no futuro.
 
 Não é possível no momento, mas será entregado no futuro.
 
-= O pedido foi pago e ficou com o status de "processando" e não como "concluído", isto esta certo ? =
+= O pedido foi pago e ficou com o status de "processando" e não como "concluído", isto esta certo? =
 
 Sim, esta certo e significa que o plugin esta trabalhando como deveria.
 
@@ -185,21 +160,11 @@ Para produtos baixáveis a configuração padrão do WooCommerce é permitir o a
 
 = É possível cancelar o pagamento/devolver o dinheiro do cliente pelo plugin? =
 
-Sim é possível fazer reembolsos do valor total ou parcial, entretanto apenas para transações feitas em menos de 90 dias, 
+Sim é possível fazer reembolsos do valor total ou parcial, entretanto apenas para transações feitas em menos de 120 dias, além de que é necessário utilizar WooCommerce 2.2 ou superior.
 
-**Reembolso total**
+Os reembolsos devem ser feito dentro da página do pedido na tela de administração do WordPress em "WooCommerce > Pedidos", sendo possível encontrar a opção para isso clicando no botão "Reembolso" na tabela de itens do pedido.
 
-Basta mudar o status do pedido para "reembolsado", desta forma é enviado um sinal para a Cielo dizendo que a transação deve ser cancelada e o valor reembolsado.
-
-* Nota: Isto irá funcionar apenas para pagamentos feitos depois de instalada a versão 3.0.0 deste plugin.
-
-**Reembolso parcial**
-
-A partir do WooCommerce 2.2 foi implementada uma API e uma interface para fazer reembolsos parciais e este plugin a partir da versão 3.1.0 esta totalmente integrado com esta nova API.
-
-Desta forma basta fazer o reembolso na tela do pedido, assim será enviado um sinal para a Cielo dizendo qual o valor deve ser reembolsado.
-
-* Nota: Para reembolsos parciais você deve utilizar o WooCommerce 2.2 ou superior, além de que os pedidos devem ter sido feitos nesta versão e também com o Cielo WooCommerce na versão 3.1.0 ou superior.
+**Nota:** Para pagamentos com débito e para cartão de crédito da bandeira Discover é possível apenas realizar o reembolso do valor total do pedido.
 
 = Aconteceu um erro, o que eu faço? =
 
@@ -215,62 +180,98 @@ Não é um problema caso você não consiga entender o arquivo de log, pois voc�
 
 Esta mensagem geralmente irá aparecer quando o seu servidor tiver problemas para fazer a conexão com a Cielo. Mas é possível saber com certeza o que aconteceu de errado utilizando a opção de log do plugin como descrito na sessão acima.
 
-== For Developers ==
-
-= Criando um template personalizado para o formulário do checkout =
-
-É possível alterar formulário e adicionar um customizado utilizando o filtro `wc_cielo_form_path`.
-
-Exemplo de uso do filtro em um tema:
-
-	function custom_wc_cielo_form_path( $path ) {
-		return get_template_directory() . '/cielo-html-form.php';
-	}
-	add_filter( 'wc_cielo_form_path', 'custom_wc_cielo_form_path' );
-
-Depois basta criar o arquivo `cielo-html-form.php` dentro do seu tema e escrever o HTML dele como você julgar melhor (utilize os modelos prontos no plugin dentro de `includes/views` para ter uma ideia de como deve ser os elementos e as variáveis que você pode utilizar).
-
-Ao criar um formulário customizado pode ser boa ideia remover os scripts adicionados pelo plugin e você pode fazer da seguinte forma:
-
-	function remove_wc_cielo_scripts() {
-		wp_dequeue_style( 'wc-cielo-checkout-icons' );
-		wp_dequeue_script( 'wc-cielo-checkout-icons' );
-	}
-	add_action( 'wp_enqueue_scripts', 'remove_wc_cielo_scripts', 1000 );
-
-
 == Screenshots ==
 
-1. Configurações do plugin.
-2. Checkout com o formulário padrão.
-2. Checkout com o formulário utilizando ícones dos cartões.
+1. Configurações para cartão de crédito.
+1. Configurações para cartão de débito.
+2. Página de finalização utilizando o tema Storefront, mostrando as opções de crédito e débito na Solução Webservice.
 
 == Changelog ==
 
-= 3.1.1 - 07/09/2014 =
+= 4.0.10 - 2015/08/09 =
+
+* Corrigido limite de caracteres para o campo de cartão (não estava funcionando para cartão Aura).
+* Suporte confirmado para WooCommerce 2.4.
+
+= 4.0.9 - 2015/05/14 =
+
+* Correção do método de reembolsos.
+* Removido código antigo que fazia reembolsos quando alterado o pédido para cancelado (veja a documentação do plugin para mais detalhes).
+* Correção das opções de autenticação.
+* Correção da autenticação para cartão de débito.
+
+= 4.0.8 - 2015/05/08 =
+
+* Corrigido os dados enviados para a Solução Webservice de débito e crédito.
+
+= 4.0.7 - 2015/05/08 =
+
+* Alterado os atributos "name" dos campos de débito e crédito para a Solução Webservice.
+* Corrigido erros na identificação da bandeira de cartões com a Solução Webservice.
+
+= 4.0.6 - 2015/05/03 =
+
+* Correção da validação de bandeira dos cartões de débito para a Solução Webservice.
+
+= 4.0.5 - 2015/05/01 =
+
+* Correção da tradução.
+
+= 4.0.4 - 2015/04/30 =
+
+* Corrigida validação de parcelas.
+* Adicionado método em PHP para detectar a bandeira do cartão de crédito e removido o método antigo em JavaScript.
+
+= 4.0.3 - 2015/04/26 =
+
+* Corrigida verificação de SSL no checkout, este erro estava impedindo de exibir as opções em produção para a Solução Webservice.
+* Alterado o limite para cancelamento/reembolso de 90 dias para 120 dias, como manda a nova documentação da Cielo.
+
+= 4.0.2 - 2015/04/13 =
+
+* Corrigida a finalização com cartão de crédito quando as parcelas é configurada como 1.
+
+= 4.0.1 - 2015/04/11 =
+
+* Corrigida a validação das parcelas quando configurado o número de parcelas como 1.
+
+= 4.0.0 - 2015/04/10 =
+
+* Implementada a Solução Webservice (funciona apenas para WooCommerce 2.3 ou superior).
+* Adicionado esquema de templates para tornar possível a manipulação dos formulários de checkout.
+* Depreciado o filtro `wc_cielo_form_path`.
+* Refatorado todo o código do plugin dividindo em dois gateways, uma para crédito e outro para débito.
+* Corrigido do parcelamento, agora funciona corretamente com o juros por mês.
+* Alterado nome do plugin para "Cielo WooCommerce - Solução Webservice".
+
+= 3.1.2 - 2015/02/08 =
+
+* Correção do SSL da Cielo.
+
+= 3.1.1 - 2014/09/07 =
 
 * Melhorada a integração com o `_transaction_id` para o WooCommerce 2.2.
 
-= 3.1.0 - 07/09/2014 =
+= 3.1.0 - 2014/09/07 =
 
 * Adicionado suporte para reembolsos parciais do WooCommerce 2.2.
 * Melhorada a compatibilidade com o WordPress 4.0.
 
-= 3.0.3 - 25/06/2014 =
+= 3.0.3 - 2014/06/25 =
 
 * Adicionada opção para selecionar os métodos de débito disponíveis.
 
-= 3.0.2 - 22/06/2014 =
+= 3.0.2 - 2014/06/22 =
 
 * Melhorada a exibição das notas do pedido com as informações sobre o pagamento.
 * Corrigido o script que atualiza as opções do plugin ao utilizar uma versão mais nova.
 
-= 3.0.1 - 22/06/2014 =
+= 3.0.1 - 2014/06/22 =
 
 * Permitido valores inferiores a R$ 5,00 para pagamento à vista em cartão de crédito.
 * Quando cancelado o pagamento na tela da Cielo o cliente é redirecionado para o caralogo do WooCommerce.
 
-= 3.0.0 - 22/06/2014 =
+= 3.0.0 - 2014/06/22 =
 
 * Refatorado todo o código do plugin.
 * Adicionado completo suporte para as versões 2.0.x e 2.1.x do WooCommerce
@@ -283,19 +284,19 @@ Ao criar um formulário customizado pode ser boa ideia remover os scripts adicio
 * Adicionada uma mensagem informando o cartão, forma de pagamento (crédito ou débito) e quantidade de parcelas nas notas do pedido ao concluir o pagamento.
 * Adicionado filtro `wc_cielo_form_path`, que torna possível customizar o formulário de seleção do cartão e de parcelas.
 
-= 2.0.10 - 17/06/2014 =
+= 2.0.10 - 2014/06/17 =
 
 * Corrigido a finalização e a URL de retorno para versões 2.0.x do WooCommerce.
 
-= 2.0.9 - 12/06/2014 =
+= 2.0.9 - 2014/06/17 =
 
 * Correção dos valores padrões das opções.
 
-= 2.0.8 - 12/06/2014 =
+= 2.0.8 - 2014/06/12 =
 
 * Correção do retorno do pagamento para as versões 2.1.x do WooCommerce.
 
-= 2.0.7 - 11/06/2014 =
+= 2.0.7 - 2014/06/11 =
 
 * Suporte inicial para as versões 2.1.x do WooCommerce.
 
@@ -331,11 +332,10 @@ Ao criar um formulário customizado pode ser boa ideia remover os scripts adicio
 
 == Upgrade Notice ==
 
-= 3.1.1 =
+= 4.0.10 =
 
-* Adicionado suporte para reembolsos parciais do WooCommerce 2.2.
-* Melhorada a compatibilidade com o WordPress 4.0.
-* Melhorada a integração com o `_transaction_id` para o WooCommerce 2.2.
+* Corrigido limite de caracteres para o campo de cartão (não estava funcionando para cartão Aura).
+* Suporte confirmado para WooCommerce 2.4.
 
 == License ==
 

@@ -81,86 +81,15 @@ class WC_Cielo_API {
 	}
 
 	/**
-	 * Get payment methods.
-	 *
-	 * @return array
-	 */
-	public static function get_payment_methods() {
-		return array(
-			'visa'       => __( 'Visa', 'cielo-woocommerce' ),
-			'mastercard' => __( 'MasterCard', 'cielo-woocommerce' ),
-			'diners'     => __( 'Diners', 'cielo-woocommerce' ),
-			'discover'   => __( 'Discover', 'cielo-woocommerce' ),
-			'elo'        => __( 'Elo', 'cielo-woocommerce' ),
-			'amex'       => __( 'American Express', 'cielo-woocommerce' ),
-			'jcb'        => __( 'JCB', 'cielo-woocommerce' ),
-			'aura'       => __( 'Aura', 'cielo-woocommerce' ),
-		);
-	}
-
-	/**
-	 * Get payment method name.
-	 *
-	 * @param  string $slug Payment method slug.
-	 *
-	 * @return string       Payment method name.
-	 */
-	public static function get_payment_method_name( $slug ) {
-		$methods = self::get_payment_methods();
-
-		if ( isset( $methods[ $slug ] ) ) {
-			return $methods[ $slug ];
-		}
-
-		return '';
-	}
-
-	/**
-	 * Get debit methods.
-	 *
-	 * @return array
-	 */
-	public static function get_debit_methods( $debit_methods ) {
-		switch ( $debit_methods ) {
-			case 'all' :
-				$methods = array( 'visa', 'mastercard' );
-				break;
-			case 'visa' :
-				$methods = array( 'visa' );
-				break;
-			case 'mastercard' :
-				$methods = array( 'mastercard' );
-				break;
-
-			default :
-				$methods = array();
-				break;
-		}
-
-		return $methods;
-	}
-
-	/**
-	 * Get methods who accepts authorization.
-	 *
-	 * @return array
-	 */
-	public static function get_accept_authorization() {
-		return array( 'visa', 'mastercard' );
-	}
-
-	/**
 	 * Set cURL custom settings for Cielo.
 	 *
 	 * @param  resource $handle The cURL handle returned by curl_init().
 	 * @param  array    $r      The HTTP request arguments.
 	 * @param  string   $url    The destination URL.
-	 *
-	 * @return void
 	 */
 	public function curl_settings( $handle, $r, $url ) {
 		if ( isset( $r['sslcertificates'] ) && $this->get_certificate() === $r['sslcertificates'] && $this->get_api_url() === $url ) {
-			curl_setopt( $handle, CURLOPT_SSLVERSION, 3 );
+			curl_setopt( $handle, CURLOPT_SSLVERSION, 4 );
 		}
 	}
 
@@ -176,10 +105,17 @@ class WC_Cielo_API {
 				'key'    => $this->gateway->key
 			);
 		} else {
-			return array(
-				'number' => $this->test_cielo_number,
-				'key'    => $this->test_cielo_key
-			);
+			if ( 'webservice' == $this->gateway->store_contract ) {
+				return array(
+					'number' => $this->test_store_number,
+					'key'    => $this->test_store_key
+				);
+			} else {
+				return array(
+					'number' => $this->test_cielo_number,
+					'key'    => $this->test_cielo_key
+				);
+			}
 		}
 	}
 
@@ -206,23 +142,38 @@ class WC_Cielo_API {
 	}
 
 	/**
-	 * Get the order return URL.
+	 * Get credit card brand.
 	 *
-	 * @param  WC_Order $order Order data.
+	 * @param  string $number
 	 *
 	 * @return string
 	 */
-	protected function get_return_url( $order ) {
-		global $woocommerce;
+	public function get_card_brand( $number ) {
+		$number = preg_replace( '([^0-9])', '', $number );
+		$brand  = '';
 
-		// Backwards compatibility with WooCommerce version prior to 2.1.
-		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '2.1', '>=' ) ) {
-			$url = WC()->api_request_url( 'WC_Cielo_Gateway' );
-		} else {
-			$url = $woocommerce->api_request_url( 'WC_Cielo_Gateway' );
+		// https://gist.github.com/arlm/ceb14a05efd076b4fae5
+		$supported_brands = array(
+			'visa'       => '/^4\d{12}(\d{3})?$/',
+			'mastercard' => '/^(5[1-5]\d{4}|677189)\d{10}$/',
+			'diners'     => '/^3(0[0-5]|[68]\d)\d{11}$/',
+			'discover'   => '/^6(?:011|5[0-9]{2})[0-9]{12}$/',
+			'elo'        => '/^((((636368)|(438935)|(504175)|(451416)|(636297))\d{0,10})|((5067)|(4576)|(4011))\d{0,12})$/',
+			'amex'       => '/^3[47]\d{13}$/',
+			'jcb'        => '/^(?:2131|1800|35\d{3})\d{11}$/',
+			'aura'       => '/^(5078\d{2})(\d{2})(\d{11})$/',
+			'hipercard'  => '/^(606282\d{10}(\d{3})?)|(3841\d{15})$/',
+			'maestro'    => '/^(?:5[0678]\d\d|6304|6390|67\d\d)\d{8,15}$/',
+		);
+
+		foreach ( $supported_brands as $key => $value ) {
+			if ( preg_match( $value, $number ) ) {
+				$brand = $key;
+				break;
+			}
 		}
 
-		return urlencode( htmlentities( add_query_arg( array( 'key' => $order->order_key, 'order' => $order->id ), $url ), ENT_QUOTES ) );
+		return $brand;
 	}
 
 	/**
@@ -262,49 +213,6 @@ class WC_Cielo_API {
 	}
 
 	/**
-	 * Get valid value.
-	 * Prevents users from making shit!
-	 *
-	 * @param  string|int|float $value
-	 *
-	 * @return int|float
-	 */
-	public static function get_valid_value( $value ) {
-		$value = str_replace( '%', '', $value );
-		$value = str_replace( ',', '.', $value );
-
-		return $value;
-	}
-
-	/**
-	 * Get the status name.
-	 *
-	 * @param  int $id Status ID.
-	 *
-	 * @return string
-	 */
-	public static function get_status_name( $id ) {
-		$status = array(
-			0  => _x( 'Transaction created', 'Transaction Status', 'cielo-woocommerce' ),
-			1  => _x( 'Transaction ongoing', 'Transaction Status', 'cielo-woocommerce' ),
-			2  => _x( 'Transaction authenticated', 'Transaction Status', 'cielo-woocommerce' ),
-			3  => _x( 'Transaction not authenticated', 'Transaction Status', 'cielo-woocommerce' ),
-			4  => _x( 'Transaction authorized', 'Transaction Status', 'cielo-woocommerce' ),
-			5  => _x( 'Transaction not authorized', 'Transaction Status', 'cielo-woocommerce' ),
-			6  => _x( 'Transaction captured', 'Transaction Status', 'cielo-woocommerce' ),
-			9  => _x( 'Transaction cancelled', 'Transaction Status', 'cielo-woocommerce' ),
-			10 => _x( 'Transaction in authentication', 'Transaction Status', 'cielo-woocommerce' ),
-			12 => _x( 'Transaction in cancellation', 'Transaction Status', 'cielo-woocommerce' ),
-		);
-
-		if ( isset( $status[ $id ] ) ) {
-			return $status[ $id ];
-		}
-
-		return _x( 'Transaction failed', 'Transaction Status', 'cielo-woocommerce' );
-	}
-
-	/**
 	 * Get default error message.
 	 *
 	 * @return StdClass
@@ -323,6 +231,7 @@ class WC_Cielo_API {
 	 *
 	 * @return array        Remote response data.
 	 */
+
 	protected function do_request( $data ) {
 		$params = array(
 			'body'            => 'mensagem=' . $data,
@@ -344,35 +253,42 @@ class WC_Cielo_API {
 	/**
 	 * Do transaction.
 	 *
-	 * @param  WC_Order $order          Order data.
-	 * @param  string   $id             Request ID.
-	 * @param  string   $card_brand     Card brand slug.
-	 * @param  int      $installments   Number of installments (use 0 for debit).
+	 * @param  WC_Order $order            Order data.
+	 * @param  string   $id               Request ID.
+	 * @param  string   $card_brand       Card brand slug.
+	 * @param  int      $installments     Number of installments (use 0 for debit).
+	 * @param  array    $credit_card_data Credit card data for the webservice.
+	 * @param  bool     $is_debit         Check if is debit or credit.
 	 *
 	 * @return SimpleXmlElement|StdClass Transaction data.
 	 */
-	public function do_transaction( $order, $id, $card_brand, $installments ) {
+	public function do_transaction( $order, $id, $card_brand, $installments = 0, $credit_card_data = array(), $is_debit = false ) {
 		$account_data    = $this->get_account_data();
 		$payment_product = '1';
-		$order_total     = $order->order_total;
+		$order_total     = (float) $order->get_total();
 		$authorization   = $this->gateway->authorization;
 
 		// Set the authorization.
-		if ( in_array( $card_brand, self::get_accept_authorization() ) && 3 != $authorization ) {
+		if ( in_array( $card_brand, $this->gateway->get_accept_authorization() ) && 3 != $authorization && ! $is_debit ) {
 			$authorization = 3;
 		}
 
 		// Set the order total with interest.
-		if ( 'client' == $this->gateway->installment_type && $installments >= $this->gateway->interest ) {
-			$order_total = $order->order_total * ( ( 100 + self::get_valid_value( $this->gateway->interest_rate ) ) / 100 );
+		if ( isset( $this->gateway->installment_type ) && 'client' == $this->gateway->installment_type && $installments >= $this->gateway->interest ) {
+			$interest_rate        = $this->gateway->get_valid_value( $this->gateway->interest_rate ) / 100;
+			$interest_total       = $order_total * ( $interest_rate / ( 1 - ( 1 / pow( 1 + $interest_rate, $installments ) ) ) );
+			$interest_order_total = $interest_total * $installments;
+
+			if ( $order_total < $interest_order_total ) {
+				$order_total = round( $interest_order_total, 2 );
+			}
 		}
 
 		// Set the debit values.
-		if ( in_array( $card_brand, self::get_debit_methods( $this->gateway->debit_methods ) ) && 0 == $installments ) {
-			$order_total     = $order->order_total * ( ( 100 - self::get_valid_value( $this->gateway->debit_discount ) ) / 100 );
+		if ( $is_debit ) {
+			$order_total     = $order_total * ( ( 100 - $this->gateway->get_valid_value( $this->gateway->debit_discount ) ) / 100 );
 			$payment_product = 'A';
 			$installments    = '1';
-			$authorization   = ( 3 == $authorization ) ? 2 : $authorization;
 		}
 
 		// Set the product when has installments.
@@ -382,9 +298,15 @@ class WC_Cielo_API {
 
 		$xml = new WC_Cielo_XML( '<?xml version="1.0" encoding="' . $this->charset . '"?><requisicao-transacao id="' . $id . '" versao="' . self::VERSION . '"></requisicao-transacao>' );
 		$xml->add_account_data( $account_data['number'], $account_data['key'] );
+
+		if ( $credit_card_data ) {
+			$xml->add_card_data( $credit_card_data['card_number'], $credit_card_data['card_expiration'], $credit_card_data['card_cvv'], $credit_card_data['name_on_card'] );
+		}
+
 		$xml->add_order_data( $order, $order_total, self::CURRENCY, $this->get_language() );
 		$xml->add_payment_data( $card_brand, $payment_product, $installments );
-		$xml->add_return_url( $this->get_return_url( $order ) );
+
+		$xml->add_return_url( $this->gateway->get_api_return_url( $order ) );
 		$xml->add_authorize( $authorization );
 		$xml->add_capture( 'true' );
 		$xml->add_token_generation( 'false' );
@@ -496,7 +418,7 @@ class WC_Cielo_API {
 	 *
 	 * @return array
 	 */
-	public function do_transaction_cancellation( $order, $tid, $id, $amount = null ) {
+	public function do_transaction_cancellation( $order, $tid, $id, $amount = 0 ) {
 		$account_data = $this->get_account_data();
 		$xml          = new WC_Cielo_XML( '<?xml version="1.0" encoding="' . $this->charset . '"?><requisicao-cancelamento id="' . $id . '" versao="' . self::VERSION . '"></requisicao-cancelamento>' );
 		$xml->add_tid( $tid );
@@ -510,7 +432,7 @@ class WC_Cielo_API {
 		$data = $xml->render();
 
 		if ( 'yes' == $this->gateway->debug ) {
-			$this->gateway->log->add( $this->gateway->id, 'Canceling the transaction for the order ' . $order->get_order_number() . '...' );
+			$this->gateway->log->add( $this->gateway->id, 'Refunding ' . $amount . ' from order ' . $order->get_order_number() . '...' );
 		}
 
 		// Do the request.
@@ -545,7 +467,7 @@ class WC_Cielo_API {
 		}
 
 		if ( 'yes' == $this->gateway->debug ) {
-			$this->gateway->log->add( $this->gateway->id, 'Order ' . $order->get_order_number() . ' canceled successfully' );
+			$this->gateway->log->add( $this->gateway->id, 'Refunded ' . $amount . ' from order ' . $order->get_order_number() . ' successfully!' );
 		}
 
 		return $body;
